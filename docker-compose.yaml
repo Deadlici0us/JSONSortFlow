@@ -1,0 +1,17 @@
+services:
+  sorter:
+    container_name: sorter
+    image: node:latest
+    user: "root"
+    working_dir: /home/node/app
+    restart: unless-stopped
+    volumes:
+      - "./:/home/node/app"
+    env_file: ./config/sorter.dev.env
+
+    #entrypoint: "sleep infinity && npm install --save-dev" # Uncomment for development
+    entrypoint: "bash ./run.sh" # Uncomment for production
+
+    hostname: sorter
+    ports:
+      - 80:80
