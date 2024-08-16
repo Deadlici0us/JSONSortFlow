@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Navigate to the project directory
+# Navigate to the project directory!
 cd /home/node/app
 
 # Install dependencies
