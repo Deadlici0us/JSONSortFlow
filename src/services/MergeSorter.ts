@@ -5,6 +5,9 @@ class MergeSorter implements ISorter {
     const steps: number[][] = [];
     const indexes: number[][] = [];
 
+    // Add the initial state of the array to the steps
+    steps.push([...numbers]);
+
     function merge(start: number, middle: number, end: number) {
       const leftPart = numbers.slice(start, middle + 1);
       const rightPart = numbers.slice(middle + 1, end + 1);

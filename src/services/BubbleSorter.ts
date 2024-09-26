@@ -5,6 +5,9 @@ class BubbleSorter implements ISorter {
     const steps: number[][] = [];
     const indexes: number[][] = [];
 
+    // Add the initial state of the array to the steps
+    steps.push([...numbers]);
+
     let swapped: boolean;
 
     do {
