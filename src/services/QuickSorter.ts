@@ -5,9 +5,6 @@ class QuickSorter implements ISorter {
     const steps: number[][] = [];
     const indexes: number[][] = [];
 
-    // Add the initial state of the array to the steps
-    steps.push([...numbers]);
-
     function partition(start: number, end: number): number {
       const pivot = numbers[end];
       let i = start - 1;
