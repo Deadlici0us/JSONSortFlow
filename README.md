@@ -1,4 +1,4 @@
-# JSONSortFlow 🌈
+# JSONSortFlow 
 
 Welcome to JSONSortFlow - where sorting meets visualization in the world of JSON-powered awesomeness! 🚀
 
@@ -36,7 +36,7 @@ Now, let's play with some numbers! Use curl to test your sorting skills:
  -d '{"numbers": [17, 5, 12, 1, 3, 9, 14, 20, 8, 6, 15, 2, 19, 10, 16, 7, 11, 4, 13, 18]}'
 ```
 
-Replace 80 with the port specified in your sorter.dev.env file (PORT_OUT=80). Enjoy the show as your numbers get their groove on with Bubble Sort! 🎉
+Replace 80 with the port specified in your sorter.dev.env file (PORT_OUT=80).
 
 ### Other Sorting Algorithms
 
