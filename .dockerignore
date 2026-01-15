@@ -1,7 +1,7 @@
-node_modules
+node_modules/
 npm-debug.log
-dist
+build/
 .env
-.git
+.git/
 config/*.env
 !config/sorter.example.env

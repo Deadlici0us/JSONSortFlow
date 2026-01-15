@@ -7,10 +7,10 @@ services:
       # This makes the app accessible on Port 80 for the user
       - "80:3000"
     volumes:
-      - .:/home/nodeuser/app
+      - ./logs:/home/node/app/logs
     environment:
       # We tell your code to listen on 3000 inside the image
       - PORT_OUT=3000
-      - LOGS_FILE_PATH=./logs/JSONSortFlow.log
+      - LOGS_FILE_PATH=/home/node/app/logs/JSONSortFlow.log
       - MAX_ELEMENTS=100
       - TZ=America/Buenos_Aires
