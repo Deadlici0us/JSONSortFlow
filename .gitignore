@@ -6,3 +6,12 @@
 
 # logs
 /logs
+
+# Environments
+.env
+.env.local
+config/sorter.dev.env
+
+# Docker & OS
+.DS_Store
+*.log

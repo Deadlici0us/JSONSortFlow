@@ -1,13 +1,13 @@
 {
-  "name": "app",
+  "name": "jsonsortflow",
   "version": "1.0.0",
-  "description": "JSONSortFlow",
-  "main": "app.js",
+  "description": "A tool to sort and manage JSON structures",
+  "main": "build/index.js",
   "scripts": {
     "test": "jest --config=config/jest.config.ts --verbose",
     "test:watch": "jest --watch --config=config/jest.config.ts",
-    "start:dev": "node --watch build/app.js",
-    "start:prod": "node build/app.js",
+    "dev": "node --watch build/app.js",
+    "prod": "node build/app.js",
     "build": "tsc"
   },
   "keywords": [],

@@ -1,17 +1,16 @@
 services:
-  sorter:
-    container_name: sorter
-    image: node:latest
-    user: "root"
-    working_dir: /home/node/app
+  app:
+    image: ghcr.io/deadlici0us/jsonsortflow:latest
+    container_name: jsonsortflow
     restart: unless-stopped
-    volumes:
-      - "./:/home/node/app"
-    env_file: ./config/sorter.dev.env
-
-    #entrypoint: "sleep infinity && npm install --save-dev" # Uncomment for development
-    entrypoint: "bash ./run.sh" # Uncomment for production
-
-    hostname: sorter
     ports:
-      - 80:80
+      # This makes the app accessible on Port 80 for the user
+      - "80:3000"
+    volumes:
+      - .:/home/nodeuser/app
+    environment:
+      # We tell your code to listen on 3000 inside the image
+      - PORT_OUT=3000
+      - LOGS_FILE_PATH=./logs/JSONSortFlow.log
+      - MAX_ELEMENTS=100
+      - TZ=America/Buenos_Aires
