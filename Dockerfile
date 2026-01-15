@@ -41,4 +41,4 @@ USER nodeuser
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "build/index.js"]  
+CMD ["node", "build/app.js"]  
