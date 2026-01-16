@@ -1,4 +1,14 @@
-EDIT: Now there is a live endpoint available at https://api.anibal-flores.com/$algorithm. For example, you can test the bubble-sort algorithm by making a request to https://api.anibal-flores.com/bubble-sort. Below is an example of how to test the API using a POST request with a JSON body that contains an array of numbers to be sorted.
+# JSONSortFlow 
+
+JSONSortFlow is a powerful backend API designed for visualizing sorting algorithms. It processes an array of numbers and returns a step-by-step breakdown of the sorting process, including the state of the array at each step and the specific indices being compared or moved.
+
+## 🌐 Live Demo & Visualization
+
+You can see this backend in action through the visual interface at: 👉 https://anibal-flores.com/sorter
+
+There is also a live API endpoint available for testing: `api.anibal-flores.com/$algorithm` (e.g., /bubble-sort)
+
+Below is an example of how to test the API using a POST request with a JSON body that contains an array of numbers to be sorted.
 
 ```
 curl -X POST https://api.anibal-flores.com/bubble-sort \
@@ -6,36 +16,38 @@ curl -X POST https://api.anibal-flores.com/bubble-sort \
 -d '{"numbers": [8, 4, 7, 6, 3]}'
 ```
 
-# JSONSortFlow 
+## 🛠 Features
 
-Welcome to JSONSortFlow - where sorting meets visualization in the world of JSON-powered awesomeness! 🚀
+- Step-by-Step Execution: Returns every transformation of the array.
 
-## Getting Started
+- Index Tracking: Identifies which elements are being interacted with at each step (perfect for UI animations).
 
-### Prerequisites
+- Multiple Algorithms: Supports Bubble Sort, Quick Sort, Merge Sort, and more.
 
-Make sure you're equipped with Docker and Docker Compose – if not, it's time to level up! 🐳
+- Docker Ready: Easy deployment with Docker and Docker Compose.
 
-### Running with Docker
+### Deployment with Docker
 
-**Clone & Dive In!** 🏊‍♂️
+The easiest way to get JSONSortFlow running locally is using Docker Compose.
+
+### 1. Clone the Repository
 
 ```
 git clone https://github.com/Deadlici0us/JSONSortFlow.git
 cd JSONSortFlow
 ```
 
-### Launch the Magic! ✨
+### 2. Launch with Docker Compose
 
 ```
 docker-compose up -d
 ```
 
-## Testing with Curl
+The server will start by default on port `80`
 
-Now, let's play with some numbers! Use curl to test your sorting skills:
+## 🧪 How to Test
 
-### Bubble Sort test 🛁
+Once the server is running, you can test the algorithms using `curl` or any API client like Postman.
 
 ```
  curl -X POST \
@@ -44,23 +56,23 @@ Now, let's play with some numbers! Use curl to test your sorting skills:
  -d '{"numbers": [17, 5, 12, 1, 3, 9, 14, 20, 8, 6, 15, 2, 19, 10, 16, 7, 11, 4, 13, 18]}'
 ```
 
-Replace 80 with the port specified in your sorter.dev.env file (PORT_OUT=80).
+### Available Endpoints
 
-### Other Sorting Algorithms
+Replace `/bubble-sort` with any of the following to test different algorithms:
 
-For other sorting algorithms, replace /bubble-sort in the endpoint with the desired algorithm. For example, /quick-sort, /merge-sort, etc.
+- `/quick-sort`
 
-## Visualizing Sorting Algorithms 📊
+- `/merge-sort`
 
-The JSONSortFlow output includes two important elements that can be utilized for visualization:
+### Expected Output Structure
 
-- Indexes 📈
-  The indexes array provides information about the indices of the elements being compared or moved in each step of the sorting algorithm.
+The API returns a JSON object containing steps and indexes:
 
-- Steps 🔄
-  The steps array contains the sorted array at each step of the algorithm. You can use this information to create animations and visualize how the sorting algorithm progresses.
+- steps: An array of arrays showing the state of the list after each operation.
 
-## Example from quick-sort algorithm:
+- indexes: The specific indices involved in that step (e.g., [0, 1] for comparing the first two elements).
+
+### Example from quick-sort algorithm:
 
 ### Input:
 
@@ -70,12 +82,22 @@ The JSONSortFlow output includes two important elements that can be utilized for
 
 `{"steps":[[3,4,7,6,8],[3,4,7,6,8],[3,4,7,6,8],[3,4,7,6,8],[3,4,7,6,8],[3,4,7,6,8],[3,4,6,7,8]],"indexes":[[0,4],[1,1],[2,2],[3,3],[4,4],[1,1],[2,3]]}`
 
-## Licensing 📜
+## 🏗 Development
+
+If you want to run it without Docker:
+
+1. Install dependencies: `npm install`
+
+2. Start in dev mode: `npm run dev`
+
+3. Build for production: `npm run build`
+
+## 📜 Licensing
 
 JSONSortFlow is licensed under the GNU General Public License (GNU GPL) - see the LICENSE file for details.
 
-## Contributing 🤝
+## 🤝 Contributing
 
 We ❤️ contributions! Check out our Contribution Guidelines to join the fun. Whether you're fixing bugs, adding features, or just sharing ideas – let's sort things out together!
 
-## Happy sorting! 🌟
+### Happy sorting!
