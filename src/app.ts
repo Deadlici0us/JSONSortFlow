@@ -41,7 +41,7 @@ const fileLogger: Logger = new FileLogger(logsFilePath);
 
 const loggerCollection: Logger = new LoggerCollection([
   consoleLogger,
-  fileLogger,
+  //  fileLogger,
 ]);
 
 const defaultErrorHandler = new DefaultErrorHandler(loggerCollection);
