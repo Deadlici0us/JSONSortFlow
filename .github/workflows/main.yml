@@ -60,20 +60,21 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-push # Only runs if the build succeeds
-    if: github.ref == 'refs/heads/master' # Only deploy on master branch pushes
+    needs: build-and-push
+    if: github.ref == 'refs/heads/master'
 
     steps:
-      - name: Executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Ansible Playbook
+        uses: dawidd6/action-ansible-playbook@v2
         with:
-          host: ${{ secrets.VPS_HOST }}
-          port: ${{ secrets.VPS_SSH_PORT }}
-          username: ${{ secrets.VPS_USER }}
+          playbook: deploy.yml
+          # We create a temporary inventory in-line
+          inventory: |
+            [vps]
+            ${{ secrets.VPS_HOST }} ansible_port=${{ secrets.VPS_SSH_PORT }} ansible_user=${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd ~/server
-            # Pull the new images defined in your docker-compose
-            docker compose pull
-            # Restart containers with the new images, removing old containers
-            docker compose up -d --remove-orphans
+          options: |
+            --extra-vars "ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
