@@ -1,0 +1,9 @@
+- name: Deploy Portfolio
+  hosts: all
+  tasks:
+    - name: Pull and Restart Docker services
+      community.docker.docker_compose_v2:
+        project_src: ~/server
+        state: present
+        pull: always
+        remove_orphans: true
