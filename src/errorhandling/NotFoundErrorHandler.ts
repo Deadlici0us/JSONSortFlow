@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from './IErrorHandler';
-import { Logger } from '../utils/ILogger';
+import { ILogger } from '../utils/ILogger';
 import { NotFoundError } from './NotFoundError';
 
 export class NotFoundErrorHandler implements ErrorHandler {
-    constructor(private logger: Logger) {}
+    constructor(private logger: ILogger) {}
 
     public handle(
         err: Error,
@@ -13,25 +13,15 @@ export class NotFoundErrorHandler implements ErrorHandler {
         next: NextFunction
     ): boolean {
         if (err instanceof NotFoundError) {
-            this.logger.log(
-                new Date().toString() +
-                    ' Error: ' +
-                    err.message +
-                    ' ' +
-                    req.protocol +
-                    '://' +
-                    req.get('host') +
-                    req.originalUrl
-            );
+            const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+            this.logger.error('Not Found Error', { 
+                message: err.message, 
+                url,
+                stack: err.stack 
+            });
             res.status(err.statusCode || 400).json({
                 error: 'Not Found Error.',
-                message:
-                    err.message +
-                    ' ' +
-                    req.protocol +
-                    '://' +
-                    req.get('host') +
-                    req.originalUrl,
+                message: err.message + ' ' + url,
             });
             return true;
         }

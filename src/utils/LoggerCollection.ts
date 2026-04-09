@@ -1,14 +1,37 @@
-import { Logger } from './ILogger';
+import { ILogger } from './ILogger';
 
-export class LoggerCollection implements Logger {
-    private loggers: Logger[];
+/**
+ * Logger collection that delegates logging to multiple loggers.
+ * Useful for logging to multiple destinations simultaneously.
+ */
+export class LoggerCollection implements ILogger {
+    private readonly loggers: ILogger[];
 
-    constructor(loggers: Logger[]) {
+    constructor(loggers: ILogger[]) {
         this.loggers = loggers;
     }
-    log(message: string): void {
+
+    public info(message: string, meta?: unknown): void {
         this.loggers.forEach((logger) => {
-            logger.log(message);
+            logger.info(message, meta);
+        });
+    }
+
+    public warn(message: string, meta?: unknown): void {
+        this.loggers.forEach((logger) => {
+            logger.warn(message, meta);
+        });
+    }
+
+    public error(message: string, meta?: unknown): void {
+        this.loggers.forEach((logger) => {
+            logger.error(message, meta);
+        });
+    }
+
+    public debug(message: string, meta?: unknown): void {
+        this.loggers.forEach((logger) => {
+            logger.debug(message, meta);
         });
     }
 }

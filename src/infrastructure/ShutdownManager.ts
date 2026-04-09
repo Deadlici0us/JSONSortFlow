@@ -76,11 +76,11 @@ class ShutdownManager {
     /**
      * Terminates the thread pool and its worker threads.
      *
-     * This method calls the thread pool's destroy method to safely
+     * This method calls the thread pool's graceful shutdown method to safely
      * terminate all worker threads and clean up resources.
      */
     private async CloseThreadPool(): Promise<void> {
-        await this.threadPool.Shutdown();
+        this.threadPool.GracefulShutdown();
         console.log('Thread pool closed');
     }
 

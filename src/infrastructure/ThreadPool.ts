@@ -5,7 +5,7 @@
 
 import { Worker } from 'worker_threads';
 import { resolve } from 'path';
-import { Logger } from './Logger';
+import { ILogger } from '../utils/ILogger';
 
 export interface TaskPayload {
   modulePath: string;
@@ -32,7 +32,7 @@ export interface WorkerConfig {
  * crashing the main thread.
  */
 export class ThreadPool {
-  private logger: Logger;
+  private logger: ILogger;
   private maxWorkers: number;
   private workers: Worker[];
   private taskQueue: TaskPayload[];
@@ -47,7 +47,7 @@ export class ThreadPool {
    * @param logger - Logger instance for error reporting
    * @param maxWorkers - Maximum number of worker threads (default: 4)
    */
-  constructor(logger: Logger, maxWorkers: number = 4) {
+  constructor(logger: ILogger, maxWorkers: number = 4) {
     this.logger = logger;
     this.maxWorkers = this.ValidateMaxWorkers(maxWorkers);
     this.workers = [];
@@ -153,7 +153,7 @@ export class ThreadPool {
     worker.on('error', (error: Error) => {
       handle.error = error.message;
       handle.status = 'failed';
-      this.logger.Error('Worker error', {
+      this.logger.error('Worker error', {
         taskId: handle.id,
         error: error.message,
       });
@@ -164,7 +164,7 @@ export class ThreadPool {
       if (code !== 0) {
         handle.error = `Worker exited with code ${code}`;
         handle.status = 'failed';
-        this.logger.Error('Worker exit', {
+        this.logger.error('Worker exit', {
           taskId: handle.id,
           exitCode: code,
         });
@@ -179,7 +179,7 @@ export class ThreadPool {
     } catch (error) {
       handle.error = (error as Error).message;
       handle.status = 'failed';
-      this.logger.Error('Task post failed', {
+      this.logger.error('Task post failed', {
         taskId: handle.id,
         error: (error as Error).message,
       });

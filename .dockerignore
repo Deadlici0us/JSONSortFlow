@@ -28,13 +28,21 @@ Makefile
 
 # Documentation
 *.md
-!README.md
+docs/
+reports/
 
 # CI/CD
 .github/
-*.yml
-*.yaml
-!docker-compose.yml
+deploy.yml
+
+# Test & Lint Configs
+eslint.config.js
+jest.config.ts
+jest.config.stryker.ts
+vitest.config.ts
+stryker.conf.json
+.prettierrc.json
+.babelrc
 
 # Coverage and reports
 coverage/

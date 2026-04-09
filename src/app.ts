@@ -4,6 +4,8 @@ import { Server } from 'http';
 import { ThreadPool } from './infrastructure/ThreadPool';
 import { ShutdownManager } from './infrastructure/ShutdownManager';
 import { SignalLifecycleManager } from './infrastructure/SignalLifecycleManager';
+import { ILogger } from './utils/ILogger';
+import { ConsoleLogger } from './utils/ConsoleLogger';
 import { BfsSearcher } from './services/BfsSearcher';
 import { AStarSearcher } from './services/AStarSearcher';
 import { DfsSearcher } from './services/DfsSearcher';
@@ -22,6 +24,7 @@ import { BadRequestError } from './errorhandling/BadRequestError';
 class App {
     private app: express.Application;
     private server: Server | null = null;
+    private logger: ILogger;
     private threadPool: ThreadPool;
     private bfsSearcher: BfsSearcher;
     private aStarSearcher: AStarSearcher;
@@ -35,7 +38,8 @@ class App {
 
    constructor() {
         this.app = express();
-        this.threadPool = ThreadPool.GetInstance();
+        this.logger = new ConsoleLogger();
+        this.threadPool = new ThreadPool(this.logger, 4);
         this.bfsSearcher = new BfsSearcher();
         this.aStarSearcher = new AStarSearcher();
         this.dfsSearcher = new DfsSearcher();
@@ -397,10 +401,7 @@ class App {
      */
     public Listen(port: number): express.Application {
         this.server = this.app.listen(port, () => {
-            console.log(`Server running on port ${port}`);
-
-            // Initialize thread pool after server is listening
-            this.threadPool.Initialize();
+            this.logger.info('Server running on port', { port });
 
             // Create shutdown manager after server is ready
             this.shutdownManager = new ShutdownManager(

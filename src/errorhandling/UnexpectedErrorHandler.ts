@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { Logger } from '../utils/ILogger';
+import { ILogger } from '../utils/ILogger';
 import { ErrorHandler } from './IErrorHandler';
 
 export class UnexpectedErrorHandler implements ErrorHandler {
-    constructor(private logger: Logger) {}
+    constructor(private logger: ILogger) {}
 
     public handle(
         err: Error | null | undefined | string,
@@ -15,7 +15,10 @@ export class UnexpectedErrorHandler implements ErrorHandler {
             err && typeof err === 'object' && 'stack' in err
                 ? (err as Error).stack
                 : String(err);
-        this.logger.log(new Date().toString() + ' ' + errorMessage);
+        this.logger.error('Unexpected Error', { 
+            message: errorMessage,
+            stack: err instanceof Error ? err.stack : undefined 
+        });
         res.status(500).json({
             error: 'Internal Server Error.',
             message: 'Unexpected Error',

@@ -33,3 +33,7 @@ npm-debug.log*
 # Stryker
 stryker.conf.js
 .stryker-tmp/
+
+# Documentation & Reports
+docs/
+reports/

@@ -2,12 +2,12 @@
   "name": "jsonsortflow",
   "version": "1.0.0",
   "description": "A tool to sort and manage JSON structures",
-  "main": "build/app.js",
+  "main": "build/src/index.js",
   "scripts": {
     "test": "jest --config=config/jest.config.ts --verbose",
-    "test:watch": "jest --watch --config=config/jest.config.ts",
-    "dev": "node --watch build/app.js",
-    "prod": "node build/app.js",
+    "test:watch": "jest --watch --config=jest.config.ts",
+    "dev": "node --watch build/src/index.js",
+    "prod": "node build/src/index.js",
     "build": "tsc"
   },
   "keywords": [],
@@ -39,6 +39,7 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
     "vitest": "^4.1.3"
   },

@@ -4,7 +4,7 @@
  */
 
 import { ThreadPool } from '../../src/infrastructure/ThreadPool';
-import { Logger } from '../../src/infrastructure/Logger';
+import { ConsoleLogger } from '../../src/utils/ConsoleLogger';
 
 // Mock worker_threads module
 jest.mock('worker_threads', () => {
@@ -20,7 +20,7 @@ jest.mock('worker_threads', () => {
 
 describe('ThreadPool', () => {
   let threadPool: ThreadPool;
-  let logger: Logger;
+  let logger: ConsoleLogger;
   let originalStdoutWrite: typeof process.stdout.write;
   let originalStderrWrite: typeof process.stderr.write;
   let stdoutOutput: string[];
@@ -44,7 +44,7 @@ describe('ThreadPool', () => {
       return true;
     };
 
-    logger = new Logger();
+    logger = new ConsoleLogger();
     threadPool = new ThreadPool(logger);
   });
 
