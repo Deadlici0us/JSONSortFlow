@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  jsonsortflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: jsonsortflow-app
+    restart: unless-stopped
+    
+    # Port mapping
+    ports:
+      - "3000:3000"
+    
+    # Resource limits to enforce ThreadPool constraints
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'           # Limit to 2 CPU cores
+          memory: 512M          # Limit to 512MB RAM
+        reservations:
+          cpus: '0.5'           # Reserve 0.5 CPU core
+          memory: 256M          # Reserve 256MB RAM
+    
+    # Environment variables
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MIN_THREADS=2
+      - MAX_THREADS=4
+      - MAX_CONCURRENT=1
+      # Rate limiting configuration
+      - RATE_LIMIT_MAX=100
+      - RATE_LIMIT_WINDOW=60000
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    
+    # Network mode
+    network_mode: bridge
+
+networks:
+  default:
+    name: jsonsortflow-network
+    driver: bridge

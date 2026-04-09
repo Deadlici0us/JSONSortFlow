@@ -1,55 +1,60 @@
-import { FileLogger } from "../src/utils/FileLogger";
-import * as fs from "fs";
+import { FileLogger } from '../src/utils/FileLogger';
+import * as fs from 'fs';
+
+// Mock console.log
+const mockConsoleLog = jest.fn();
+jest.spyOn(console, 'log').mockImplementation(mockConsoleLog);
 
 // Mock the fs module
-jest.mock("fs", () => {
-  const originalModule = jest.requireActual("fs");
-
-  return {
-    ...originalModule,
+jest.mock('fs', () => ({
     existsSync: jest.fn(),
     mkdirSync: jest.fn(),
     promises: {
-      ...originalModule.promises,
-      appendFile: jest.fn().mockResolvedValue(undefined),
+        appendFile: jest.fn().mockResolvedValue(undefined),
     },
-  };
-});
+}));
 
-describe("FileLogger class (Unit Test)", () => {
-  const filePath = "/path/to/logs/test_log.txt";
+describe('FileLogger class (Unit Test)', () => {
+    const filePath = '/path/to/logs/test_log.txt';
 
-  beforeEach(() => {
-    // Clear all mocks between tests
-    jest.clearAllMocks();
-  });
-
-  it("should create directory if it does not exist", () => {
-    (fs.existsSync as jest.Mock).mockReturnValueOnce(false);
-    new FileLogger(filePath);
-    expect(fs.mkdirSync).toHaveBeenCalledWith("/path/to/logs", {
-      recursive: true,
+    beforeEach(() => {
+        // Clear all mocks between tests
+        jest.clearAllMocks();
     });
-  });
 
-  it("should log messages to the file", async () => {
-    const fileLogger = new FileLogger(filePath);
-    await fileLogger.log("Test Message");
-    expect(fs.promises.appendFile).toHaveBeenCalledWith(
-      filePath,
-      "Test Message\n\r"
-    );
-  });
+    it('should create directory if it does not exist', () => {
+        (fs.existsSync as jest.Mock).mockReturnValueOnce(false);
+        new FileLogger(filePath);
+        expect(fs.mkdirSync).toHaveBeenCalledWith('/path/to/logs', {
+            recursive: true,
+        });
+    });
 
-  it("should handle log write failure", async () => {
-    (fs.promises.appendFile as jest.Mock).mockRejectedValueOnce(
-      new Error("Write Error")
-    );
-    const fileLogger = new FileLogger(filePath);
-    await fileLogger.log("Test Message");
-    expect(fs.promises.appendFile).toHaveBeenCalledWith(
-      filePath,
-      "Test Message\n\r"
-    );
-  });
+    it('should NOT create directory if it already exists', () => {
+        (fs.existsSync as jest.Mock).mockReturnValueOnce(true);
+        new FileLogger(filePath);
+        expect(fs.mkdirSync).not.toHaveBeenCalled();
+    });
+
+    it('should log messages to the file', async () => {
+        const fileLogger = new FileLogger(filePath);
+        await fileLogger.log('Test Message');
+        expect(fs.promises.appendFile).toHaveBeenCalledWith(
+            filePath,
+            'Test Message\n\r'
+        );
+    });
+
+    it('should handle log write failure', async () => {
+        (fs.promises.appendFile as jest.Mock).mockRejectedValueOnce(
+            new Error('Write Error')
+        );
+        const fileLogger = new FileLogger(filePath);
+        await fileLogger.log('Test Message');
+        expect(fs.promises.appendFile).toHaveBeenCalledWith(
+            filePath,
+            'Test Message\n\r'
+        );
+        expect(mockConsoleLog).toHaveBeenCalledWith('Failed to write log entry to file.');
+    });
 });

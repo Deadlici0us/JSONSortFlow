@@ -1,7 +1,55 @@
-node_modules/
-npm-debug.log
+# Dependencies
+node_modules
+npm-debug.log*
+package-lock.json
+
+# Build output
 build/
+dist/
+
+# Tests
+tests/
+*.test.ts
+*.spec.ts
+
+# Development
+.git
+.gitignore
+.docker
+docker-compose*.yml
+Dockerfile*
+Makefile
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+*.yml
+*.yaml
+!docker-compose.yml
+
+# Coverage and reports
+coverage/
+reports/
+nyc.output*
+
+# Environment files
 .env
-.git/
-config/*.env
-!config/sorter.example.env
+.env.*
+*.env
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

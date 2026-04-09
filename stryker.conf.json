@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema.json",
+  "packageManager": "npm",
+  "testRunner": "jest",
+  "mutate": [
+    "src/**/*.ts"
+  ],
+  "coverageAnalysis": "perTest",
+  "reporters": [
+    "progress",
+    "html",
+    "clear-text"
+  ]
+}

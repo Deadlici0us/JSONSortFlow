@@ -64,6 +64,45 @@ Replace `/bubble-sort` with any of the following to test different algorithms:
 
 - `/merge-sort`
 
+### Pathfinding/Search Endpoints
+
+JSONSortFlow also provides pathfinding algorithms for grid-based search:
+
+- `/bfs-search` - Breadth-First Search
+- `/astar-search` - A* Search Algorithm
+- `/dfs-search` - Depth-First Search
+- `/dijkstra-search` - Dijkstra Search Algorithm
+
+#### Search Input Format
+
+Search endpoints expect a JSON payload with:
+- `start`: Starting coordinate as [x, y] tuple
+- `end`: Ending coordinate as [x, y] tuple
+- `matrix`: 32x32 grid matrix (0 = empty, 1 = obstacle)
+
+```
+curl -X POST http://localhost:80/bfs-search \
+-H 'Content-Type: application/json' \
+-d '{
+  "start": [0, 0],
+  "end": [31, 31],
+  "matrix": [[0,0,0,...], ...]
+}'
+```
+
+#### Search Output Format
+
+Returns:
+- `explored`: Array of coordinates explored during search
+- `result`: Array of coordinates representing the path from start to end (empty if no path found)
+
+```
+{
+  "explored": [[0,0], [1,0], [0,1], ...],
+  "result": [[0,0], [1,0], [2,0], ..., [31,31]]
+}
+```
+
 ### Expected Output Structure
 
 The API returns a JSON object containing steps and indexes:

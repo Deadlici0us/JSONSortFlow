@@ -1,0 +1,41 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "prettier"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": "error",
+    "@typescript-eslint/explicit-function-return-type": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/indent": "off",
+    "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+    "no-undef": 0,
+    "indent": "off"
+  },
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "globals": {
+    "setTimeout": "readonly",
+    "clearTimeout": "readonly",
+    "console": "readonly",
+    "process": "readonly",
+    "describe": "readonly",
+    "test": "readonly",
+    "it": "readonly",
+    "expect": "readonly",
+    "beforeEach": "readonly",
+    "afterEach": "readonly",
+    "jest": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  }
+}

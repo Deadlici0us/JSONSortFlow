@@ -1,7 +1,7 @@
-import { Logger } from "./ILogger";
+import { Logger } from './ILogger';
 
 export class ConsoleLogger implements Logger {
-  public log(message: string): void {
-    console.log(message);
-  }
+    public log(message: string): void {
+        console.log(message);
+    }
 }

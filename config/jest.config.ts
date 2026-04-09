@@ -18,6 +18,9 @@ const config: Config = {
   // Automatically clear mock calls, instances, contexts and results before every test
   // clearMocks: false,
 
+  // Force Jest to exit after all tests have completed
+  forceExit: true,
+
   // Indicates whether the coverage information should be collected while executing the test
   // collectCoverage: false,
 
@@ -31,6 +34,9 @@ const config: Config = {
   // coveragePathIgnorePatterns: [
   //   "/node_modules/"
   // ],
+
+  // Set the root directory to the project root (parent of config/)
+  rootDir: "../",
 
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: "v8",
@@ -126,7 +132,7 @@ const config: Config = {
   // rootDir: undefined,
 
   // A list of paths to directories that Jest should use to search for files in
-  roots: ["<rootDir>../src", "<rootDir>../tests"],
+  roots: ["<rootDir>/src", "<rootDir>/tests"],
 
   // Allows you to use a custom runner instead of Jest's default test runner
   // runner: "jest-runner",
@@ -174,8 +180,21 @@ const config: Config = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    "^.+\\.ts$": "ts-jest",
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        tsconfig: "tsconfig.json",
+        useESM: false,
+        isolatedModules: false,
+      },
+    ],
   },
+
+  // Explicitly add coverage collection for mutation testing
+  collectCoverage: true,
+  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts"],
+  coverageDirectory: "coverage",
+  coverageReporters: ["json", "text", "lcov", "clover"],
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
