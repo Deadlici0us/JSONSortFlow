@@ -13,6 +13,7 @@ export class BadRequestErrorHandler implements ErrorHandler {
         next: NextFunction
     ): boolean {
         if (err instanceof BadRequestError) {
+            console.log(' ' + err.stack);
             this.logger.error('Bad Request Error', { stack: err.stack, message: err.message });
             res.status(err.statusCode || 400).json({
                 error: 'Bad Request',

@@ -15,6 +15,7 @@ export class UnexpectedErrorHandler implements ErrorHandler {
             err && typeof err === 'object' && 'stack' in err
                 ? (err as Error).stack
                 : String(err);
+        console.log(' ' + errorMessage);
         this.logger.error('Unexpected Error', { 
             message: errorMessage,
             stack: err instanceof Error ? err.stack : undefined 

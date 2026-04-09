@@ -13,6 +13,7 @@ export class DefaultErrorHandler implements ErrorHandler {
         next: NextFunction
     ): boolean {
         if (err instanceof DefaultError) {
+            console.log(' ' + err.stack);
             this.logger.error('Default Error', { stack: err.stack, message: err.message });
             res.status(err.statusCode || 500).json({
                 error: 'Internal Server Error.',

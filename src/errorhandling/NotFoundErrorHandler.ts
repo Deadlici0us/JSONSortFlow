@@ -14,6 +14,8 @@ export class NotFoundErrorHandler implements ErrorHandler {
     ): boolean {
         if (err instanceof NotFoundError) {
             const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+            const fullMessage = err.message + ' ' + url;
+            console.log(' Error: ' + fullMessage);
             this.logger.error('Not Found Error', { 
                 message: err.message, 
                 url,
@@ -21,7 +23,7 @@ export class NotFoundErrorHandler implements ErrorHandler {
             });
             res.status(err.statusCode || 400).json({
                 error: 'Not Found Error.',
-                message: err.message + ' ' + url,
+                message: fullMessage,
             });
             return true;
         }
