@@ -8,12 +8,19 @@
  *
  * @returns A replacer function for use with JSON.stringify
  */
-export const getCircularReplacer = (): ((key: string, value: unknown) => unknown) => {
+export const getCircularReplacer = (): ((
+    key: string,
+    value: unknown
+) => unknown) => 
+{
     const seen = new WeakSet<object>();
-    
-    return (key: string, value: unknown): unknown => {
-        if (typeof value === 'object' && value !== null) {
-            if (seen.has(value)) {
+
+    return (key: string, value: unknown): unknown => 
+{
+        if (typeof value === 'object' && value !== null) 
+{
+            if (seen.has(value)) 
+{
                 return '[Circular Reference]';
             }
             seen.add(value);
@@ -34,18 +41,20 @@ export const formatStructuredLog = (
     level: string,
     message: string,
     meta?: unknown
-): string => {
+): string => 
+{
     const payload: Record<string, unknown> = {
         timestamp: new Date().toISOString(),
         level,
         message,
     };
-    
+
     // Only include meta if provided
-    if (meta !== undefined && meta !== null) {
+    if (meta !== undefined && meta !== null) 
+{
         payload.meta = meta;
     }
-    
+
     // Safely convert to JSON handling any circular references in 'meta'
     return JSON.stringify(payload, getCircularReplacer());
 };

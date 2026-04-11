@@ -11,16 +11,21 @@ import { ThreadPool } from './ThreadPool';
  * const shutdown = new ShutdownManager(server, threadPool);
  * process.on('SIGTERM', () => shutdown.BeginShutdown());
  */
-class ShutdownManager {
+class ShutdownManager 
+{
     private isShuttingDown: boolean = false;
     private readonly timeoutMs: number = 10000;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private forcefulTimer: any = null;
 
+    /**
+     *
+     */
     constructor(
         private readonly server: Server,
         private readonly threadPool: ThreadPool
-    ) {}
+    ) 
+{}
 
     /**
      * Begins the graceful shutdown sequence.
@@ -33,23 +38,29 @@ class ShutdownManager {
      *
      * If shutdown doesn't complete within the timeout, a forceful exit occurs.
      */
-    public async BeginShutdown(): Promise<void> {
-        if (this.isShuttingDown) {
+    public async BeginShutdown(): Promise<void> 
+{
+        if (this.isShuttingDown) 
+{
             return;
         }
 
         this.isShuttingDown = true;
 
+        // eslint-disable-next-line no-console
         console.log('Shutdown initiated...');
 
         this.StartForcefulExitTimer();
 
-        try {
+        try 
+{
             await this.StopAcceptingRequests();
             await this.CloseThreadPool();
             await this.ExitApplication();
             this.ClearForcefulExitTimer();
-        } catch (error) {
+        }
+ catch (error) 
+{
             this.HandleShutdownError(error);
         }
     }
@@ -60,13 +71,18 @@ class ShutdownManager {
      * This method calls server.close() which stops accepting new connections
      * and waits for all active connections to finish before resolving.
      */
-    private async StopAcceptingRequests(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.server.close((error) => {
-                if (error) {
+    private async StopAcceptingRequests(): Promise<void> 
+{
+        return new Promise((resolve, reject) => 
+{
+            this.server.close((error) => 
+{
+                if (error) 
+{
                     reject(error);
                     return;
                 }
+                // eslint-disable-next-line no-console
                 console.log('HTTP server closed');
                 resolve();
             });
@@ -79,8 +95,10 @@ class ShutdownManager {
      * This method calls the thread pool's graceful shutdown method to safely
      * terminate all worker threads and clean up resources.
      */
-    private async CloseThreadPool(): Promise<void> {
+    private async CloseThreadPool(): Promise<void> 
+{
         this.threadPool.GracefulShutdown();
+        // eslint-disable-next-line no-console
         console.log('Thread pool closed');
     }
 
@@ -90,7 +108,9 @@ class ShutdownManager {
      * This method calls process.exit(0) to terminate the application
      * with a success code after all resources have been cleaned up.
      */
-    private async ExitApplication(): Promise<void> {
+    private async ExitApplication(): Promise<void> 
+{
+        // eslint-disable-next-line no-console
         console.log('Application shutdown complete');
         process.exit(0);
     }
@@ -101,8 +121,11 @@ class ShutdownManager {
      * This is a safety mechanism to prevent the application from
      * hanging indefinitely during shutdown.
      */
-    private StartForcefulExitTimer(): void {
-        this.forcefulTimer = setTimeout(() => {
+    private StartForcefulExitTimer(): void 
+{
+        this.forcefulTimer = setTimeout(() => 
+{
+            // eslint-disable-next-line no-console
             console.error(
                 `Shutdown exceeded ${this.timeoutMs}ms, forcing exit`
             );
@@ -116,8 +139,10 @@ class ShutdownManager {
      * This should be called when shutdown completes successfully
      * to prevent the timer from triggering unnecessarily.
      */
-    private ClearForcefulExitTimer(): void {
-        if (this.forcefulTimer !== null) {
+    private ClearForcefulExitTimer(): void 
+{
+        if (this.forcefulTimer !== null) 
+{
             clearTimeout(this.forcefulTimer);
         }
     }
@@ -127,10 +152,12 @@ class ShutdownManager {
      *
      * @param error - The error that occurred
      */
-    private HandleShutdownError(error: unknown): void {
+    private HandleShutdownError(error: unknown): void 
+{
         this.ClearForcefulExitTimer();
         const message =
             error instanceof Error ? error.message : 'Unknown shutdown error';
+        // eslint-disable-next-line no-console
         console.error('Shutdown error:', message);
         process.exit(1);
     }
@@ -140,7 +167,8 @@ class ShutdownManager {
      *
      * @returns true if shutdown has begun
      */
-    public IsShuttingDown(): boolean {
+    public IsShuttingDown(): boolean 
+{
         return this.isShuttingDown;
     }
 }

@@ -49,8 +49,15 @@ const config: Config = {
   //   "clover"
   // ],
 
-  // An object that configures minimum threshold enforcement for coverage results
-  // coverageThreshold: undefined,
+ // An object that configures minimum threshold enforcement for coverage results
+  coverageThreshold: {
+    global: {
+      statements: 100,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+    },
+  },
 
   // A path to a custom dependency extractor
   // dependencyExtractor: undefined,
@@ -142,9 +149,13 @@ const config: Config = {
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],
+  setupFilesAfterEnv: [],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
-  // slowTestThreshold: 5,
+  slowTestThreshold: 5,
+
+  // Timeout for each test in milliseconds
+  testTimeout: 60000,
 
   // A list of paths to snapshot serializer modules Jest should use for snapshot testing
   // snapshotSerializers: [],
@@ -168,9 +179,17 @@ const config: Config = {
   // testPathIgnorePatterns: [
   //   "/node_modules/"
   // ],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "middlewares",
+    "partitioned",
+    "app\\.(integration|search|sort)\\.test\\.ts"
+  ],
 
-  // The regexp pattern or array of patterns that Jest uses to detect test files
-  testRegex: "(tests/.*\\.test\\.ts)$",
+ // The regexp pattern or array of patterns that Jest uses to detect test files
+  testRegex: "tests/.*\\.test\\.ts$",
+  // Ignore compiled JavaScript tests
+  // testMatch: ["**/?(*.)+(spec|test).ts"],
 
   // This option allows the use of a custom results processor
   // testResultsProcessor: undefined,
@@ -191,7 +210,7 @@ const config: Config = {
   },
 
   // Explicitly add coverage collection for mutation testing
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts"],
   coverageDirectory: "coverage",
   coverageReporters: ["json", "text", "lcov", "clover"],

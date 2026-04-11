@@ -4,182 +4,239 @@ type Coordinate = [number, number];
 type ParentMap = Map<string, Coordinate>;
 type DistanceMap = Map<string, number>;
 
-export class DijkstraSearcher implements ISearcher {
+/**
+ * Implements Dijkstra's shortest path algorithm.
+ */
+export class DijkstraSearcher implements ISearcher 
+{
     /**
-     * Performs Dijkstra's algorithm to find the shortest path
-     * from start to end coordinates in a grid matrix.
+     * Performs Dijkstra's algorithm to find shortest path.
      *
-     * @param start - Starting coordinate [x, y]
-     * @param end - Ending coordinate [x, y]
-     * @param matrix - 2D grid where 0 = free, 1 = obstacle
-     * @returns Object with explored nodes and result path
+     * @param start - Start coordinate
+     * @param end - End coordinate
+     * @param matrix - Grid matrix
+     * @returns Object with explored and result
      */
     public search(
         start: Coordinate,
         end: Coordinate,
-        matrix: number[][]
-    ): { explored: Coordinate[]; result: Coordinate[] } {
+        __matrix: number[][]
+    ): { explored: Coordinate[]; result: Coordinate[] } 
+{
         const explored: Coordinate[] = [];
         const parentMap: ParentMap = new Map();
         const distances: DistanceMap = new Map();
 
-        const earlyReturn = this.CheckStartEqualsEnd(start, end, explored);
-        if (earlyReturn) {
-            return earlyReturn;
+        if (this.IsSameCoordinate(start, end)) 
+{
+            explored.push(start);
+            return { explored, result: [start] };
         }
 
         const startKey = this.CoordinateToString(start);
         distances.set(startKey, 0);
-        parentMap.set(startKey, start);
-
+        // Don't add start to parentMap - it has no parent
+        // Only add nodes to parentMap when they're discovered from another node
         const unvisited: Coordinate[] = [start];
 
-        while (true) {
-            const selection = this.GetNextTargetNode(unvisited, distances);
+        return this.ExecuteDijkstra(
+            unvisited,
+            distances,
+            explored,
+            parentMap,
+            end,
+            __matrix
+        );
+    }
 
-            if (selection === null) {
+   /**
+     * Executes main Dijkstra loop.
+     *
+     * @param unvisited - Unvisited nodes
+     * @param distances - Distance map
+     * @param explored - Explored nodes
+     * @param parentMap - Parent map
+     * @param end - End coordinate
+     * @param matrix - Grid matrix
+     * @returns Search result
+     */
+    private ExecuteDijkstra(
+        unvisited: Coordinate[],
+        distances: DistanceMap,
+        explored: Coordinate[],
+        parentMap: ParentMap,
+        end: Coordinate,
+        matrix: number[][]
+    ): { explored: Coordinate[]; result: Coordinate[] } 
+    {
+        while (unvisited.length > 0) 
+        {
+            const current = this.GetLowestCostNode(unvisited, distances);
+            if (current === null) 
+            {
                 break;
             }
 
-            const currentIndex = this.FindCoordinateIndex(selection, unvisited);
-            unvisited.splice(currentIndex, 1);
+            this.RemoveFromUnvisited(current, unvisited);
 
-            const termination = this.CheckTermination(
-                selection,
-                end,
-                explored,
-                parentMap,
-                start
-            );
-
-            if (termination) {
-                return termination;
+            if (this.IsSameCoordinate(current, end)) 
+            {
+                explored.push(current);
+                const result = this.ReconstructPath(parentMap, end);
+                return { explored, result };
             }
 
-            explored.push(selection);
-
-            this.ProcessNeighbors(
-                selection,
-                matrix,
-                distances,
-                parentMap,
-                unvisited
-            );
+            explored.push(current);
+            this.ProcessNeighbors(current, distances, parentMap, unvisited, explored, matrix);
         }
 
         return { explored, result: [] };
     }
 
     /**
-     * Selects the next target node for processing.
-     * Returns the lowest cost unvisited node or null if no unvisited nodes remain.
+     * Removes coordinate from unvisited array.
+     *
+     * @param target - Target coordinate
+     * @param unvisited - Unvisited array
      */
-    private GetNextTargetNode(
-        unvisited: Coordinate[],
-        distances: DistanceMap
-    ): Coordinate | null {
-        if (!this.HasUnvisitedNodes(unvisited)) {
-            return null;
+    private RemoveFromUnvisited(
+        target: Coordinate,
+        unvisited: Coordinate[]
+    ): void 
+{
+        const index = this.FindCoordinateIndex(target, unvisited);
+        if (index !== -1) 
+{
+            unvisited.splice(index, 1);
         }
-
-        const node = this.GetLowestCostNode(unvisited, distances);
-
-        if (this.ShouldBreakOnNull(node)) {
-            return null;
-        }
-
-        return node;
     }
 
     /**
-     * Checks termination conditions and returns result if target reached.
-     * Returns result object if at end, null otherwise.
+     * Processes neighbors of current node.
+     *
+     * @param current - Current coordinate
+     * @param distances - Distance map
+     * @param parentMap - Parent map
+     * @param unvisited - Unvisited array
+     * @param explored - Explored nodes
+     * @param matrix - Grid matrix
      */
-    private CheckTermination(
+    private ProcessNeighbors(
         current: Coordinate,
-        end: Coordinate,
-        explored: Coordinate[],
+        distances: DistanceMap,
         parentMap: ParentMap,
-        start: Coordinate
-    ): { explored: Coordinate[]; result: Coordinate[] } | null {
-        return this.CheckAndReturnIfAtEnd(
-            current,
-            end,
-            explored,
-            parentMap,
-            start
-        );
+        unvisited: Coordinate[],
+        explored: Coordinate[],
+        matrix: number[][]
+    ): void 
+    {
+        const currentKey = this.CoordinateToString(current);
+        const currentDist = distances.get(currentKey) ?? 0;
+        const neighbors = this.GetValidNeighbors(current, matrix);
+
+        for (const neighbor of neighbors) 
+        {
+            // Check if neighbor is already explored to prevent infinite loops
+            const alreadyExplored = explored.some(
+                coord => coord[0] === neighbor[0] && coord[1] === neighbor[1]
+            );
+            if (alreadyExplored) 
+            {
+                continue;
+            }
+            this.UpdateNeighbor(
+                neighbor,
+                current,
+                currentDist,
+                distances,
+                parentMap,
+                unvisited
+            );
+        }
     }
 
     /**
-     * Checks if two coordinates are the same position.
+     * Updates neighbor distance if shorter path found.
+     *
+     * @param neighbor - Neighbor coordinate
+     * @param current - Current coordinate
+     * @param currentDist - Current distance
+     * @param distances - Distance map
+     * @param parentMap - Parent map
+     * @param unvisited - Unvisited array
      */
-    private IsSameCoordinate(a: Coordinate, b: Coordinate): boolean {
+    private UpdateNeighbor(
+        neighbor: Coordinate,
+        current: Coordinate,
+        currentDist: number,
+        distances: DistanceMap,
+        parentMap: ParentMap,
+        unvisited: Coordinate[]
+    ): void 
+{
+        const neighborKey = this.CoordinateToString(neighbor);
+        const newDist = currentDist + 1;
+        const existingDist = distances.get(neighborKey);
+
+        if (existingDist === undefined || newDist < existingDist) 
+{
+            distances.set(neighborKey, newDist);
+            parentMap.set(neighborKey, current);
+            if (!this.IsInUnvisited(neighbor, unvisited)) 
+{
+                unvisited.push(neighbor);
+            }
+        }
+    }
+
+    /**
+     * Checks if coordinates are equal.
+     *
+     * @param a - First coordinate
+     * @param b - Second coordinate
+     * @returns True if equal
+     */
+    private IsSameCoordinate(a: Coordinate, b: Coordinate): boolean 
+{
         return a[0] === b[0] && a[1] === b[1];
     }
 
-    /**
-     * Checks if there are unvisited nodes remaining.
+   /**
+     * Checks if coordinates are within bounds.
+     *
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     * @param matrix - Grid matrix
+     * @returns True if within bounds
      */
-    private HasUnvisitedNodes(unvisited: Coordinate[]): boolean {
-        return unvisited.length > 0;
+    private IsWithinBounds(x: number, y: number, matrix: number[][]): boolean 
+    {
+        return x >= 0 && x < matrix[0].length && y >= 0 && y < matrix.length;
     }
 
     /**
-     * Checks if start equals end and handles early return.
+     * Converts coordinate to string.
+     *
+     * @param coord - Coordinate
+     * @returns String key
      */
-    private CheckStartEqualsEnd(
-        start: Coordinate,
-        end: Coordinate,
-        explored: Coordinate[]
-    ): { explored: Coordinate[]; result: Coordinate[] } | null {
-        if (this.IsSameCoordinate(start, end)) {
-            explored.push(start);
-            return { explored, result: [start] };
-        }
-        return null;
-    }
-
-    /**
-     * Checks if we should break on null current node.
-     */
-    private ShouldBreakOnNull(current: Coordinate | null): boolean {
-        return current === null;
-    }
-
-    /**
-     * Checks if current is at end and returns result if so.
-     */
-    private CheckAndReturnIfAtEnd(
-        current: Coordinate,
-        end: Coordinate,
-        explored: Coordinate[],
-        parentMap: ParentMap,
-        start: Coordinate
-    ): { explored: Coordinate[]; result: Coordinate[] } | null {
-        if (this.IsSameCoordinate(current, end)) {
-            explored.push(current);
-            const result = this.ReconstructPath(parentMap, start, end);
-            return { explored, result };
-        }
-        return null;
-    }
-
-    /**
-     * Converts coordinate tuple to string key for Map storage.
-     */
-    private CoordinateToString(coord: Coordinate): string {
+    private CoordinateToString(coord: Coordinate): string 
+{
         return `${coord[0]},${coord[1]}`;
     }
 
-    /**
-     * Retrieves all valid neighboring coordinates (N, S, E, W).
-     * Returns only unblocked, in-bounds neighbors.
+   /**
+     * Gets valid neighbors.
+     *
+     * @param coord - Current coordinate
+     * @param matrix - Grid matrix
+     * @returns Valid neighbors
      */
     private GetValidNeighbors(
         coord: Coordinate,
         matrix: number[][]
-    ): Coordinate[] {
+    ): Coordinate[] 
+    {
         const [x, y] = coord;
         const neighbors: Coordinate[] = [];
         const directions: [number, number][] = [
@@ -189,75 +246,45 @@ export class DijkstraSearcher implements ISearcher {
             [1, 0],
         ];
 
-        for (const [dx, dy] of directions) {
+        for (const [dx, dy] of directions) 
+        {
             const newX = x + dx;
             const newY = y + dy;
-
-            if (this.IsWithinBounds(newX, newY, matrix)) {
-                if (matrix[newY][newX] === 0) {
-                    neighbors.push([newX, newY]);
-                }
+            if (!this.IsWithinBounds(newX, newY, matrix)) 
+            {
+                continue;
             }
+            if (matrix[newY][newX] !== 0) 
+            {
+                continue;
+            }
+            neighbors.push([newX, newY]);
         }
 
         return neighbors;
     }
 
     /**
-     * Validates that coordinates are within matrix boundaries.
-     */
-    private IsWithinBounds(x: number, y: number, matrix: number[][]): boolean {
-        return x >= 0 && x < matrix[0].length && y >= 0 && y < matrix.length;
-    }
-
-    /**
-     * Reconstructs the path from start to end using parent map.
-     */
-    private ReconstructPath(
-        parentMap: ParentMap,
-        start: Coordinate,
-        end: Coordinate
-    ): Coordinate[] {
-        const path: Coordinate[] = [];
-        let current: Coordinate | null = end;
-
-        while (current !== null) {
-            path.unshift(current);
-            const currentKey = this.CoordinateToString(current);
-            const parent = parentMap.get(currentKey);
-
-            if (parent === start || !parent) {
-                if (parent === start) {
-                    path.unshift(start);
-                }
-                break;
-            }
-
-            current = parent;
-        }
-
-        return path;
-    }
-
-    /**
-     * Gets the node with the lowest distance from unvisited nodes.
+     * Gets node with lowest distance.
+     *
+     * @param unvisited - Unvisited nodes
+     * @param distances - Distance map
+     * @returns Node with lowest cost or null
      */
     private GetLowestCostNode(
         unvisited: Coordinate[],
         distances: DistanceMap
-    ): Coordinate | null {
-        if (unvisited.length === 0) {
-            return null;
-        }
-
+    ): Coordinate | null 
+{
         let lowestNode: Coordinate | null = null;
         let lowestDistance = Infinity;
 
-        for (const node of unvisited) {
+        for (const node of unvisited) 
+{
             const nodeKey = this.CoordinateToString(node);
             const distance = distances.get(nodeKey) ?? Infinity;
-
-            if (distance < lowestDistance) {
+            if (distance < lowestDistance) 
+{
                 lowestDistance = distance;
                 lowestNode = node;
             }
@@ -267,67 +294,66 @@ export class DijkstraSearcher implements ISearcher {
     }
 
     /**
-     * Finds the index of a coordinate in an array.
+     * Finds index of coordinate in array.
+     *
+     * @param target - Target coordinate
+     * @param coords - Array of coordinates
+     * @returns Index or -1
      */
     private FindCoordinateIndex(
         target: Coordinate,
         coords: Coordinate[]
-    ): number {
+    ): number 
+{
         return coords.findIndex(
             (c) => c[0] === target[0] && c[1] === target[1]
         );
     }
 
     /**
-     * Determines if neighbor distance should be updated.
-     */
-    private ShouldUpdateDistance(
-        neighborKey: string,
-        newDist: number,
-        distances: DistanceMap
-    ): boolean {
-        return (
-            !distances.has(neighborKey) || newDist < distances.get(neighborKey)!
-        );
-    }
-
-    /**
-     * Checks if a coordinate exists in the unvisited array.
+     * Checks if coordinate is in array.
+     *
+     * @param target - Target coordinate
+     * @param unvisited - Array to check
+     * @returns True if present
      */
     private IsInUnvisited(
         target: Coordinate,
         unvisited: Coordinate[]
-    ): boolean {
+    ): boolean 
+{
         return unvisited.some((c) => c[0] === target[0] && c[1] === target[1]);
     }
 
     /**
-     * Processes all valid neighbors of the current coordinate.
-     * Updates distances, parent map, and unvisited array by reference.
+     * Reconstructs path from parent map.
+     *
+     * @param parentMap - Parent map
+     * @param end - End coordinate
+     * @returns Path array
      */
-    private ProcessNeighbors(
-        current: Coordinate,
-        matrix: number[][],
-        distances: DistanceMap,
+    private ReconstructPath(
         parentMap: ParentMap,
-        unvisited: Coordinate[]
-    ): void {
-        const neighbors = this.GetValidNeighbors(current, matrix);
-        const currentKey = this.CoordinateToString(current);
-        const currentDist = distances.get(currentKey)!;
+        end: Coordinate
+    ): Coordinate[] 
+{
+        const path: Coordinate[] = [end];
+        let current: Coordinate | null = end;
 
-        for (const neighbor of neighbors) {
-            const neighborKey = this.CoordinateToString(neighbor);
-            const newDist = currentDist + 1;
+        while (current !== null) 
+{
+            const currentKey = this.CoordinateToString(current);
+            const parent = parentMap.get(currentKey);
 
-            if (this.ShouldUpdateDistance(neighborKey, newDist, distances)) {
-                distances.set(neighborKey, newDist);
-                parentMap.set(neighborKey, current);
-
-                if (!this.IsInUnvisited(neighbor, unvisited)) {
-                    unvisited.push(neighbor);
-                }
+            if (parent === undefined) 
+{
+                break;
             }
+
+            path.unshift(parent);
+            current = parent;
         }
+
+        return path;
     }
 }

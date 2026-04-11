@@ -24,6 +24,6 @@
     "strictPropertyInitialization": true,
     "alwaysStrict": true
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "*.ts"],
   "exclude": ["node_modules", "build"]
 }

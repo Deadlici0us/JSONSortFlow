@@ -1,4 +1,3 @@
-
 import { Request, Response, NextFunction } from 'express';
 
 import { NotFoundError } from '../src/errorhandling/NotFoundError';
@@ -24,35 +23,44 @@ type MockResponse = {
 
 type UnexpectedError = Error | string | null | undefined;
 
-describe('ErrorHandler Tests', () => {
+describe('ErrorHandler Tests', () => 
+{
     let consoleSpy: ReturnType<typeof jest.spyOn>;
     let logger: ConsoleLogger;
 
-    beforeEach(() => {
-        consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    beforeEach(() => 
+{
+        consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => 
+{});
         logger = new ConsoleLogger();
     });
 
-    afterEach(() => {
+    afterEach(() => 
+{
         consoleSpy.mockRestore();
     });
 
-    describe('NotFoundError', () => {
-        it('should create NotFoundError with custom message', () => {
+    describe('NotFoundError', () => 
+{
+        it('should create NotFoundError with custom message', () => 
+{
             const error = new NotFoundError(404, 'Resource not found');
             expect(error.message).toBe('Resource not found');
             expect(error instanceof Error).toBe(true);
             expect(error.statusCode).toBe(404);
         });
 
-        it('should create NotFoundError with default message', () => {
+        it('should create NotFoundError with default message', () => 
+{
             const error = new NotFoundError(404, 'Not Found');
             expect(error.message).toBe('Not Found');
         });
     });
 
-    describe('NotFoundErrorHandler', () => {
-        it('should handle NotFoundError and return 404', () => {
+    describe('NotFoundErrorHandler', () => 
+{
+        it('should handle NotFoundError and return 404', () => 
+{
             const mockError = new NotFoundError(404, 'Not found');
             const mockRequest = {
                 protocol: 'http',
@@ -70,7 +78,7 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(true);
@@ -81,7 +89,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should use default statusCode 400 when statusCode is falsy', () => {
+        it('should use default statusCode 400 when statusCode is falsy', () => 
+{
             const mockError = new NotFoundError(0, 'Not found');
             const mockRequest = {
                 protocol: 'http',
@@ -100,7 +109,8 @@ describe('ErrorHandler Tests', () => {
             expect(mockResponse.status).toHaveBeenCalledWith(400);
         });
 
-        it('should log with correct format including protocol and host', () => {
+        it('should log with correct format including protocol and host', () => 
+{
             const mockError = new NotFoundError(404, 'Resource not found');
             const mockRequest = {
                 protocol: 'https',
@@ -127,12 +137,15 @@ describe('ErrorHandler Tests', () => {
             );
         });
 
-        it('should call req.get with exact argument host', () => {
+        it('should call req.get with exact argument host', () => 
+{
             const mockError = new NotFoundError(404, 'Resource not found');
             const mockRequest = {
                 protocol: 'http',
-                get: jest.fn().mockImplementation((key) => {
-                    if (key !== 'host') {
+                get: jest.fn().mockImplementation((key) => 
+{
+                    if (key !== 'host') 
+{
                         throw new Error(`Expected 'host' but got '${key}'`);
                     }
                     return 'localhost:3000';
@@ -151,7 +164,8 @@ describe('ErrorHandler Tests', () => {
             expect(mockRequest.get).toHaveBeenCalledWith('host');
         });
 
-        it('should not handle non-NotFoundError', () => {
+        it('should not handle non-NotFoundError', () => 
+{
             const mockError = new BadRequestError(400, 'Bad request');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {} as unknown as Response;
@@ -162,15 +176,17 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(false);
         });
     });
 
-    describe('BadRequestErrorHandler', () => {
-        it('should handle BadRequestError and return 400', () => {
+    describe('BadRequestErrorHandler', () => 
+{
+        it('should handle BadRequestError and return 400', () => 
+{
             const mockError = new BadRequestError(400, 'Invalid input');
             const mockRequest = {
                 protocol: 'http',
@@ -188,7 +204,7 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(true);
@@ -199,7 +215,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should use default statusCode 400 when statusCode is falsy', () => {
+        it('should use default statusCode 400 when statusCode is falsy', () => 
+{
             const mockError = new BadRequestError(0, 'Invalid input');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -214,7 +231,8 @@ describe('ErrorHandler Tests', () => {
             expect(mockResponse.status).toHaveBeenCalledWith(400);
         });
 
-        it('should log error stack with timestamp prefix', () => {
+        it('should log error stack with timestamp prefix', () => 
+{
             const mockError = new BadRequestError(400, 'Test error');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -231,7 +249,8 @@ describe('ErrorHandler Tests', () => {
             );
         });
 
-        it('should not handle non-BadRequestError', () => {
+        it('should not handle non-BadRequestError', () => 
+{
             const mockError = new NotFoundError(404, 'Not found');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {} as unknown as Response;
@@ -242,15 +261,17 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(false);
         });
     });
 
-    describe('DefaultErrorHandler', () => {
-        it('should handle DefaultError and return 500', () => {
+    describe('DefaultErrorHandler', () => 
+{
+        it('should handle DefaultError and return 500', () => 
+{
             const mockError = new DefaultError(500, 'Something went wrong');
             const mockRequest = {
                 protocol: 'http',
@@ -268,7 +289,7 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(true);
@@ -279,7 +300,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should use default statusCode 500 when statusCode is falsy', () => {
+        it('should use default statusCode 500 when statusCode is falsy', () => 
+{
             const mockError = new DefaultError(0, 'Something went wrong');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -294,7 +316,8 @@ describe('ErrorHandler Tests', () => {
             expect(mockResponse.status).toHaveBeenCalledWith(500);
         });
 
-        it('should log error stack with timestamp prefix', () => {
+        it('should log error stack with timestamp prefix', () => 
+{
             const mockError = new DefaultError(500, 'Test error');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -311,7 +334,8 @@ describe('ErrorHandler Tests', () => {
             );
         });
 
-        it('should not handle non-DefaultError', () => {
+        it('should not handle non-DefaultError', () => 
+{
             const mockError = new Error('Generic error');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {} as unknown as Response;
@@ -322,15 +346,17 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(false);
         });
     });
 
-    describe('UnexpectedErrorHandler', () => {
-        it('should handle non-Error objects and return 500', () => {
+    describe('UnexpectedErrorHandler', () => 
+{
+        it('should handle non-Error objects and return 500', () => 
+{
             const mockError = 'String error' as UnexpectedError;
             const mockRequest = {
                 protocol: 'http',
@@ -348,7 +374,7 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(true);
@@ -359,7 +385,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle null errors', () => {
+        it('should handle null errors', () => 
+{
             const mockError = null as UnexpectedError;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -373,7 +400,7 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(true);
@@ -384,7 +411,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle undefined errors', () => {
+        it('should handle undefined errors', () => 
+{
             const mockError = undefined as UnexpectedError;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -398,7 +426,7 @@ describe('ErrorHandler Tests', () => {
                 mockError,
                 mockRequest,
                 mockResponse,
-                mockNext,
+                mockNext
             );
 
             expect(handled).toBe(true);
@@ -409,7 +437,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should use stack property when error is an object with stack', () => {
+        it('should use stack property when error is an object with stack', () => 
+{
             const mockError = new Error('Error with stack') as Error;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -426,7 +455,8 @@ describe('ErrorHandler Tests', () => {
             );
         });
 
-        it('should use String() fallback when object lacks stack property', () => {
+        it('should use String() fallback when object lacks stack property', () => 
+{
             const mockError = { message: 'Object without stack' };
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -436,16 +466,22 @@ describe('ErrorHandler Tests', () => {
             const mockNext = jest.fn();
 
             const handler = new UnexpectedErrorHandler(logger);
-            (handler.handle as unknown as (e: unknown, req: Request, res: Response, next: NextFunction) => void)(
-                mockError, mockRequest, mockResponse, mockNext
-            );
+            (
+                handler.handle as unknown as (
+                    e: unknown,
+                    req: Request,
+                    res: Response,
+                    next: NextFunction
+                ) => void
+            )(mockError, mockRequest, mockResponse, mockNext);
 
             expect(consoleSpy).toHaveBeenCalledWith(
                 expect.stringContaining('[object Object]')
             );
         });
 
-        it('should log timestamp prefix before error message', () => {
+        it('should log timestamp prefix before error message', () => 
+{
             const mockError = 'Test error' as UnexpectedError;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -463,21 +499,27 @@ describe('ErrorHandler Tests', () => {
         });
     });
 
-    describe('HandlerCollection', () => {
+    describe('HandlerCollection', () => 
+{
         let handlerCollection: HandlerCollection;
         let unexpectedHandler: UnexpectedErrorHandler;
 
-        beforeEach(() => {
+        beforeEach(() => 
+{
             unexpectedHandler = new UnexpectedErrorHandler(logger);
             const handlers = [
                 new NotFoundErrorHandler(logger),
                 new BadRequestErrorHandler(logger),
                 new DefaultErrorHandler(logger),
             ];
-            handlerCollection = new HandlerCollection(handlers, unexpectedHandler);
+            handlerCollection = new HandlerCollection(
+                handlers,
+                unexpectedHandler
+            );
         });
 
-        it('should handle NotFoundError with NotFoundErrorHandler', () => {
+        it('should handle NotFoundError with NotFoundErrorHandler', () => 
+{
             const mockError = new NotFoundError(404, 'Not found');
             const mockRequest = {
                 protocol: 'http',
@@ -490,7 +532,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(mockResponse.status).toHaveBeenCalledWith(404);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -499,7 +546,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle BadRequestError with BadRequestErrorHandler', () => {
+        it('should handle BadRequestError with BadRequestErrorHandler', () => 
+{
             const mockError = new BadRequestError(400, 'Bad request');
             const mockRequest = {
                 protocol: 'http',
@@ -512,7 +560,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -521,7 +574,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle DefaultError with DefaultErrorHandler', () => {
+        it('should handle DefaultError with DefaultErrorHandler', () => 
+{
             const mockError = new DefaultError(500, 'Server error');
             const mockRequest = {
                 protocol: 'http',
@@ -534,7 +588,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -543,7 +602,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle non-Error objects with UnexpectedErrorHandler', () => {
+        it('should handle non-Error objects with UnexpectedErrorHandler', () => 
+{
             const mockError = 'String error' as unknown as Error;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -552,7 +612,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -561,7 +626,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle null with UnexpectedErrorHandler', () => {
+        it('should handle null with UnexpectedErrorHandler', () => 
+{
             const mockError = null as unknown as Error;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -570,7 +636,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -579,7 +650,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should handle undefined with UnexpectedErrorHandler', () => {
+        it('should handle undefined with UnexpectedErrorHandler', () => 
+{
             const mockError = undefined as unknown as Error;
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -588,7 +660,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -597,7 +674,8 @@ describe('ErrorHandler Tests', () => {
             });
         });
 
-        it('should add a new error handler dynamically', () => {
+        it('should add a new error handler dynamically', () => 
+{
             const customHandler = {
                 handle: jest.fn().mockReturnValue(true),
             } as unknown as HandlerCollection;
@@ -610,12 +688,20 @@ describe('ErrorHandler Tests', () => {
             const mockNext = jest.fn();
 
             handlerCollection.addErrorHandler(customHandler);
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
-            expect((customHandler as unknown as { handle: jest.Mock }).handle).toHaveBeenCalled();
+            expect(
+                (customHandler as unknown as { handle: jest.Mock }).handle
+            ).toHaveBeenCalled();
         });
 
-        it('should not call unexpectedHandler when error is handled by a registered handler', () => {
+        it('should not call unexpectedHandler when error is handled by a registered handler', () => 
+{
             const mockError = new NotFoundError(404, 'Not found');
             const mockRequest = {
                 protocol: 'http',
@@ -629,13 +715,19 @@ describe('ErrorHandler Tests', () => {
             const mockNext = jest.fn();
 
             const unexpectedHandleSpy = jest.spyOn(unexpectedHandler, 'handle');
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(unexpectedHandleSpy).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledWith(404);
         });
 
-        it('should call unexpectedHandler when no registered handler handles the error', () => {
+        it('should call unexpectedHandler when no registered handler handles the error', () => 
+{
             const mockError = new Error('Unknown error');
             const mockRequest = {} as unknown as Request;
             const mockResponse = {
@@ -645,13 +737,19 @@ describe('ErrorHandler Tests', () => {
             const mockNext = jest.fn();
 
             const unexpectedHandleSpy = jest.spyOn(unexpectedHandler, 'handle');
-            handlerCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            handlerCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(unexpectedHandleSpy).toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledWith(500);
         });
 
-        it('should iterate through all handlers in order until one handles the error', () => {
+        it('should iterate through all handlers in order until one handles the error', () => 
+{
             const notFoundHandler = new NotFoundErrorHandler(logger);
             const badRequestHandler = new BadRequestErrorHandler(logger);
             const defaultHandler = new DefaultErrorHandler(logger);
@@ -673,7 +771,12 @@ describe('ErrorHandler Tests', () => {
             } as unknown as Response;
             const mockNext = jest.fn();
 
-            testCollection.handle(mockError, mockRequest, mockResponse, mockNext);
+            testCollection.handle(
+                mockError,
+                mockRequest,
+                mockResponse,
+                mockNext
+            );
 
             expect(notFoundSpy).toHaveBeenCalled();
             expect(badRequestSpy).toHaveBeenCalled();

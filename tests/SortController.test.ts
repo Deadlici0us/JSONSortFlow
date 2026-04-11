@@ -6,19 +6,23 @@ import QuickSorter from '../src/services/QuickSorter';
 import MergeSorter from '../src/services/MergeSorter';
 import { SorterValidator } from '../src/utils/SorterValidator';
 
-describe('SortController', () => {
+describe('SortController', () => 
+{
     let bubbleController: SortController;
     let quickController: SortController;
     let mergeController: SortController;
 
-    beforeEach(() => {
+    beforeEach(() => 
+{
         bubbleController = new SortController(new BubbleSorter());
         quickController = new SortController(new QuickSorter());
         mergeController = new SortController(new MergeSorter());
     });
 
-    describe('sort', () => {
-        it('should return sorted array for valid bubble-sort request', async () => {
+    describe('sort', () => 
+{
+        it('should return sorted array for valid bubble-sort request', async () => 
+{
             const mockRequest = {
                 body: { numbers: [3, 1, 2] },
                 query: { algorithm: 'bubble' },
@@ -35,11 +39,12 @@ describe('SortController', () => {
                 expect.objectContaining({
                     steps: expect.any(Array),
                     indexes: expect.any(Array),
-                }),
+                })
             );
         });
 
-        it('should return sorted array for valid quick-sort request', async () => {
+        it('should return sorted array for valid quick-sort request', async () => 
+{
             const mockRequest = {
                 body: { numbers: [3, 1, 2] },
                 query: { algorithm: 'quick' },
@@ -55,11 +60,12 @@ describe('SortController', () => {
                 expect.objectContaining({
                     steps: expect.any(Array),
                     indexes: expect.any(Array),
-                }),
+                })
             );
         });
 
-        it('should return sorted array for valid merge-sort request', async () => {
+        it('should return sorted array for valid merge-sort request', async () => 
+{
             const mockRequest = {
                 body: { numbers: [3, 1, 2] },
                 query: { algorithm: 'merge' },
@@ -75,11 +81,12 @@ describe('SortController', () => {
                 expect.objectContaining({
                     steps: expect.any(Array),
                     indexes: expect.any(Array),
-                }),
+                })
             );
         });
 
-        it('should throw BadRequestError when validator throws', async () => {
+        it('should throw BadRequestError when validator throws', async () => 
+{
             const mockRequest = {
                 body: { invalid: 'data' },
                 query: { algorithm: 'bubble' },
@@ -89,10 +96,13 @@ describe('SortController', () => {
                 json: jest.fn(),
             } as unknown as Response;
 
-            expect(() => bubbleController.sort(mockRequest, mockResponse)).toThrow();
+            expect(() =>
+                bubbleController.sort(mockRequest, mockResponse)
+            ).toThrow();
         });
 
-        it('should throw BadRequestError when validator throws for non-array numbers', async () => {
+        it('should throw BadRequestError when validator throws for non-array numbers', async () => 
+{
             const mockRequest = {
                 body: { numbers: 'not-an-array' },
                 query: { algorithm: 'bubble' },
@@ -102,10 +112,13 @@ describe('SortController', () => {
                 json: jest.fn(),
             } as unknown as Response;
 
-            expect(() => bubbleController.sort(mockRequest, mockResponse)).toThrow();
+            expect(() =>
+                bubbleController.sort(mockRequest, mockResponse)
+            ).toThrow();
         });
 
-        it('should handle empty array correctly', async () => {
+        it('should handle empty array correctly', async () => 
+{
             const mockRequest = {
                 body: { numbers: [] },
                 query: { algorithm: 'bubble' },
@@ -121,14 +134,15 @@ describe('SortController', () => {
                 expect.objectContaining({
                     steps: expect.any(Array),
                     indexes: expect.any(Array),
-                }),
+                })
             );
         });
 
-        it('should call validator before sorter', async () => {
+        it('should call validator before sorter', async () => 
+{
             const validatorValidate = jest.spyOn(
                 SorterValidator.prototype,
-                'validate',
+                'validate'
             );
             const mockRequest = {
                 body: { numbers: [3, 1, 2] },
@@ -144,7 +158,8 @@ describe('SortController', () => {
             expect(validatorValidate).toHaveBeenCalled();
         });
 
-        it('should throw error when validator throws for null body', async () => {
+        it('should throw error when validator throws for null body', async () => 
+{
             const mockRequest = {
                 body: null,
                 query: { algorithm: 'bubble' },
@@ -154,16 +169,22 @@ describe('SortController', () => {
                 json: jest.fn(),
             } as unknown as Response;
 
-            expect(() => bubbleController.sort(mockRequest, mockResponse)).toThrow();
+            expect(() =>
+                bubbleController.sort(mockRequest, mockResponse)
+            ).toThrow();
         });
 
-        it('should throw DefaultError when sorter throws', async () => {
+        it('should throw DefaultError when sorter throws', async () => 
+{
             const mockSorter = {
-                sort: jest.fn().mockImplementation(() => {
+                sort: jest.fn().mockImplementation(() => 
+{
                     throw new Error('Sorter failed');
                 }),
             };
-            const controller = new SortController(mockSorter as unknown as BubbleSorter);
+            const controller = new SortController(
+                mockSorter as unknown as BubbleSorter
+            );
             const mockRequest = {
                 body: { numbers: [3, 1, 2] },
                 query: { algorithm: 'bubble' },

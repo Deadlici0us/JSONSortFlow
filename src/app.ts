@@ -6,49 +6,44 @@ import { ShutdownManager } from './infrastructure/ShutdownManager';
 import { SignalLifecycleManager } from './infrastructure/SignalLifecycleManager';
 import { ILogger } from './utils/ILogger';
 import { ConsoleLogger } from './utils/ConsoleLogger';
-import { BfsSearcher } from './services/BfsSearcher';
-import { AStarSearcher } from './services/AStarSearcher';
-import { DfsSearcher } from './services/DfsSearcher';
-import { DijkstraSearcher } from './services/DijkstraSearcher';
-import BubbleSorter from './services/BubbleSorter';
-import QuickSorter from './services/QuickSorter';
-import MergeSorter from './services/MergeSorter';
-import { BadRequestError } from './errorhandling/BadRequestError';
+import { SearcherFactory } from './infrastructure/SearcherFactory';
+import { SorterFactory } from './infrastructure/SorterFactory';
+import { SearchController } from './controllers/SearchController';
+import SortController from './controllers/SortController';
 
 /**
  * Application entry point.
  *
  * Initializes the Express server and configures routes
- * for pathfinding search and sorting requests.
+ * for pathfinding search and sorting requests using
+ * Factory and Controller patterns.
  */
-class App {
+class App 
+{
     private app: express.Application;
     private server: Server | null = null;
     private logger: ILogger;
     private threadPool: ThreadPool;
-    private bfsSearcher: BfsSearcher;
-    private aStarSearcher: AStarSearcher;
-    private dfsSearcher: DfsSearcher;
-    private dijkstraSearcher: DijkstraSearcher;
-    private bubbleSorter: BubbleSorter;
-    private quickSorter: QuickSorter;
-    private mergeSorter: MergeSorter;
+    private searcherFactory: SearcherFactory;
+    private sorterFactory: SorterFactory;
     private shutdownManager: ShutdownManager | null = null;
     private signalLifecycleManager: SignalLifecycleManager;
+    private controllers: Map<string, SearchController | SortController>;
 
-   constructor() {
+    /**
+     * Creates a new App instance.
+     */
+    constructor() 
+{
         this.app = express();
         this.logger = new ConsoleLogger();
         this.threadPool = new ThreadPool(this.logger, 4);
-        this.bfsSearcher = new BfsSearcher();
-        this.aStarSearcher = new AStarSearcher();
-        this.dfsSearcher = new DfsSearcher();
-        this.dijkstraSearcher = new DijkstraSearcher();
-        this.bubbleSorter = new BubbleSorter();
-        this.quickSorter = new QuickSorter();
-        this.mergeSorter = new MergeSorter();
+        this.searcherFactory = new SearcherFactory();
+        this.sorterFactory = new SorterFactory();
         this.signalLifecycleManager = new SignalLifecycleManager();
+        this.controllers = new Map();
 
+        this.InitializeControllers();
         this.Initialize();
         this.RegisterSignalHandlers();
         this.RegisterShutdownHook();
@@ -56,12 +51,68 @@ class App {
     }
 
     /**
+     * Initializes controllers with DI.
+     */
+    private InitializeControllers(): void 
+{
+        this.InitializeSearchControllers();
+        this.InitializeSortControllers();
+    }
+
+    /**
+     * Initializes search controllers.
+     */
+    private InitializeSearchControllers(): void 
+{
+        this.RegisterSearchController('bfs', 'bfs');
+        this.RegisterSearchController('astar', 'astar');
+        this.RegisterSearchController('dfs', 'dfs');
+        this.RegisterSearchController('dijkstra', 'dijkstra');
+    }
+
+    /**
+     * Registers a search controller.
+     *
+     * @param key - The controller map key
+     * @param algorithm - The algorithm type
+     */
+    private RegisterSearchController(key: string, algorithm: string): void 
+{
+        const searcher = this.searcherFactory.create(algorithm);
+        const controller = new SearchController(searcher);
+        this.controllers.set(key, controller);
+    }
+
+    /**
+     * Initializes sort controllers.
+     */
+    private InitializeSortControllers(): void 
+{
+        this.RegisterSortController('bubble', 'bubble');
+        this.RegisterSortController('quick', 'quick');
+        this.RegisterSortController('merge', 'merge');
+    }
+
+    /**
+     * Registers a sort controller.
+     *
+     * @param key - The controller map key
+     * @param algorithm - The algorithm type
+     */
+    private RegisterSortController(key: string, algorithm: string): void 
+{
+        const sorter = this.sorterFactory.create(algorithm);
+        const controller = new SortController(sorter);
+        this.controllers.set(key, controller);
+    }
+
+    /**
      * Initializes middleware and routes.
      */
-    private Initialize(): void {
+    private Initialize(): void 
+{
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
-
         this.ConfigureRoutes();
         this.ConfigureErrorHandlers();
     }
@@ -69,323 +120,201 @@ class App {
     /**
      * Configures application routes.
      */
-    private ConfigureRoutes(): void {
-        this.app.get('/', (req, res) => {
-            res.json({
-                success: true,
-                message: 'JSONSortFlow API is running',
-                version: '1.0.0',
-            });
-        });
+    private ConfigureRoutes(): void 
+{
+        this.app.get('/', this.HandleRoot.bind(this));
+        this.app.get('/health', this.HandleHealth.bind(this));
+        this.ConfigureSearchRoutes();
+        this.ConfigureSortRoutes();
+    }
 
-        this.app.get('/health', (req, res) => {
-            res.json({
-                success: true,
-                status: 'healthy',
-                timestamp: new Date().toISOString(),
-            });
-        });
+    /**
+     * Configures search routes.
+     */
+    private ConfigureSearchRoutes(): void 
+{
+        this.app.post('/bfs-search', this.CreateSearchRoute('bfs'));
+        this.app.post('/astar-search', this.CreateSearchRoute('astar'));
+        this.app.post('/dfs-search', this.CreateSearchRoute('dfs'));
+        this.app.post('/dijkstra-search', this.CreateSearchRoute('dijkstra'));
+    }
 
-        // Search endpoints
-        this.app.post('/bfs-search', (req, res) => {
-            this.HandleSearch(req, res, this.bfsSearcher);
-        });
+    /**
+     * Creates a search route handler.
+     *
+     * @param key - The controller map key
+     * @returns Route handler function
+     */
+    private CreateSearchRoute(
+        key: string
+    ): (req: Request, res: Response) => void 
+{
+        return (req: Request, res: Response) => 
+{
+            const controller = this.controllers.get(key) as SearchController;
+            controller.search(req, res);
+        };
+    }
 
-        this.app.post('/astar-search', (req, res) => {
-            this.HandleSearch(req, res, this.aStarSearcher);
-        });
+    /**
+     * Configures sort routes.
+     */
+    private ConfigureSortRoutes(): void 
+{
+        this.app.post('/bubble-sort', this.CreateSortRoute('bubble'));
+        this.app.post('/quick-sort', this.CreateSortRoute('quick'));
+        this.app.post('/merge-sort', this.CreateSortRoute('merge'));
+    }
 
-        this.app.post('/dfs-search', (req, res) => {
-            this.HandleSearch(req, res, this.dfsSearcher);
-        });
+    /**
+     * Creates a sort route handler.
+     *
+     * @param key - The controller map key
+     * @returns Route handler function
+     */
+    private CreateSortRoute(
+        key: string
+    ): (req: Request, res: Response) => void 
+{
+        return (req: Request, res: Response) => 
+{
+            const controller = this.controllers.get(key) as SortController;
+            controller.sort(req, res);
+        };
+    }
 
-        this.app.post('/dijkstra-search', (req, res) => {
-            this.HandleSearch(req, res, this.dijkstraSearcher);
+    /**
+     * Handles root endpoint.
+     *
+     * @param req - Express request
+     * @param res - Express response
+     */
+    private HandleRoot(req: Request, res: Response): void 
+{
+        res.json({
+            success: true,
+            message: 'JSONSortFlow API is running',
+            version: '1.0.0',
         });
+    }
 
-        // Sort endpoints
-        this.app.post('/bubble-sort', (req, res) => {
-            this.HandleSort(req, res, this.bubbleSorter);
-        });
-
-        this.app.post('/quick-sort', (req, res) => {
-            this.HandleSort(req, res, this.quickSorter);
-        });
-
-        this.app.post('/merge-sort', (req, res) => {
-            this.HandleSort(req, res, this.mergeSorter);
+    /**
+     * Handles health check endpoint.
+     *
+     * @param req - Express request
+     * @param res - Express response
+     */
+    private HandleHealth(req: Request, res: Response): void 
+{
+        res.json({
+            success: true,
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
         });
     }
 
     /**
      * Configures error handlers.
      */
-    private ConfigureErrorHandlers(): void {
-        // 404 handler
-        this.app.use((req, res) => {
-            res.status(404).json({
-                error: 'Not Found Error.',
-                message: `Cannot ${req.method} ${req.path}`,
-            });
-        });
-
-        // Global error handler
-        this.app.use(
-            (
-                err: Error,
-                req: Request,
-                res: Response,
-                next: express.NextFunction
-            ) => {
-                if (err instanceof BadRequestError) {
-                    res.status(400).json({
-                        error: 'BadRequestError',
-                        message: err.message,
-                    });
-                } else {
-                    res.status(500).json({
-                        error: 'Internal Server Error.',
-                        message: err.message,
-                    });
-                }
-            }
-        );
+    private ConfigureErrorHandlers(): void 
+{
+        this.app.use(this.HandleNotFound.bind(this));
+        this.app.use(this.HandleGlobalError.bind(this));
     }
 
     /**
-     * Handles search requests.
+     * Handles 404 errors.
      *
-     * @param req - Express request object
-     * @param res - Express response object
-     * @param searcher - The search algorithm to use
+     * @param req - Express request
+     * @param res - Express response
      */
-    private async HandleSearch(
-        req: Request,
-        res: Response,
-        searcher: BfsSearcher | AStarSearcher | DfsSearcher | DijkstraSearcher
-    ): Promise<void> {
-        try {
-            const { matrix, start, end } = req.body;
+    private HandleNotFound(req: Request, res: Response): void 
+{
+        res.status(404).json({
+            error: 'Not Found Error.',
+            message: `Cannot ${req.method} ${req.path}`,
+        });
+    }
 
-            // Validate matrix
-            if (!matrix || !Array.isArray(matrix)) {
-                if (!matrix) {
-                    res.status(400).json({
-                        error: 'BadRequestError',
-                        message: 'Matrix is required',
-                    });
-                } else {
-                    res.status(400).json({
-                        error: 'BadRequestError',
-                        message: 'Matrix must be a 2D array',
-                    });
-                }
-                return;
-            }
+    /**
+     * Handles global errors.
+     *
+     * @param err - The error
+     * @param req - Express request
+     * @param res - Express response
+     */
+    private HandleGlobalError(err: Error, req: Request, res: Response): void 
+{
+        const isBadRequest = err.message.includes('BadRequestError');
+        const isDefaultError = err.message.includes('DefaultError');
+        this.HandleBadRequestOrDefault(isBadRequest, isDefaultError, err, res);
+    }
 
-            if (matrix.length === 0 || !Array.isArray(matrix[0])) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'Matrix must be a 2D array',
-                });
-                return;
-            }
-
-            // Validate matrix dimensions (must be exactly 32x32)
-            if (matrix.length !== 32 || matrix[0].length !== 32) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'Matrix dimensions must be exactly 32x32',
-                });
-                return;
-            }
-
-            // Validate matrix values (only 0 or 1 allowed)
-            for (const row of matrix) {
-                for (const val of row) {
-                    if (val !== 0 && val !== 1) {
-                        res.status(400).json({
-                            error: 'BadRequestError',
-                            message:
-                                'Matrix must contain only 0 (free) or 1 (obstacle)',
-                        });
-                        return;
-                    }
-                }
-            }
-
-            // Validate start coordinate
-            if (!start || !Array.isArray(start) || start.length !== 2) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'start must be a tuple [x, y]',
-                });
-                return;
-            }
-
-            // Validate end coordinate
-            if (!end || !Array.isArray(end) || end.length !== 2) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'end must be a tuple [x, y]',
-                });
-                return;
-            }
-
-            // Validate coordinate bounds (must be within matrix dimensions)
-            const matrixRows = matrix.length;
-            const matrixCols = matrix[0].length;
-
-            if (
-                start[0] < 0 ||
-                start[0] >= matrixCols ||
-                start[1] < 0 ||
-                start[1] >= matrixRows
-            ) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'Start coordinate out of bounds',
-                });
-                return;
-            }
-
-            if (
-                end[0] < 0 ||
-                end[0] >= matrixCols ||
-                end[1] < 0 ||
-                end[1] >= matrixRows
-            ) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'End coordinate out of bounds',
-                });
-                return;
-            }
-
-            // Validate that start and end positions are not blocked
-            const startX = start[0];
-            const startY = start[1];
-            const endX = end[0];
-            const endY = end[1];
-
-            if (matrix[startY][startX] === 1) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'Start position is blocked by obstacle',
-                });
-                return;
-            }
-
-            if (matrix[endY][endX] === 1) {
-                res.status(400).json({
-                    error: 'BadRequestError',
-                    message: 'End position is blocked by obstacle',
-                });
-                return;
-            }
-
-            // Execute the search with correct parameter order: start, end, matrix
-            const result = searcher.search(
-                start as [number, number],
-                end as [number, number],
-                matrix as number[][]
-            );
-
-            res.status(200).json({
-                explored: result.explored,
-                result: result.result,
-            });
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : 'Invalid request';
+    /**
+     * Handles bad request or default error responses.
+     *
+     * @param isBadRequest - Whether it's a bad request
+     * @param isDefaultError - Whether it's a default error
+     * @param err - The error
+     * @param res - Express response
+     */
+    private HandleBadRequestOrDefault(
+        isBadRequest: boolean,
+        isDefaultError: boolean,
+        err: Error,
+        res: Response
+    ): void 
+{
+        if (isBadRequest) 
+{
             res.status(400).json({
                 error: 'BadRequestError',
-                message: message,
+                message: err.message,
             });
+            return;
         }
-    }
-
-    /**
-     * Handles sort requests.
-     *
-     * @param req - Express request object
-     * @param res - Express response object
-     * @param sorter - The sorting algorithm to use
-     */
-    private HandleSort(
-        req: Request,
-        res: Response,
-        sorter: BubbleSorter | QuickSorter | MergeSorter
-    ): void {
-        try {
-            const { numbers } = req.body;
-
-            // Validate numbers
-            if (!numbers || !Array.isArray(numbers)) {
-                res.status(400).json({
-                    error: 'Bad Request',
-                    message: 'numbers is required and must be an array',
-                });
-                return;
-            }
-
-            // Validate array size (max 100 elements)
-            if (numbers.length > 100) {
-                res.status(400).json({
-                    error: 'Bad Request',
-                    message: 'numbers array must have at most 100 elements',
-                });
-                return;
-            }
-
-            // Validate number range (0-99)
-            for (const num of numbers) {
-                if (typeof num !== 'number' || num < 0 || num >= 100) {
-                    res.status(400).json({
-                        error: 'Bad Request',
-                        message: 'numbers must be in range 0-99',
-                    });
-                    return;
-                }
-            }
-
-            const result = sorter.sort(numbers as number[]);
-
-            res.status(200).json({
-                steps: result.steps,
-                indexes: result.indexes,
+        if (isDefaultError) 
+{
+            res.status(500).json({
+                error: 'Internal Server Error.',
+                message: err.message,
             });
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : 'Bad Request';
-            res.status(400).json({
-                error: 'Bad Request',
-                message: message,
-            });
+            return;
         }
+        res.status(500).json({
+            error: 'Internal Server Error.',
+            message: err.message,
+        });
     }
 
     /**
      * Registers OS signal handlers for graceful shutdown.
      */
-    private RegisterSignalHandlers(): void {
-        const handleShutdown = async (): Promise<void> => {
-            if (this.shutdownManager !== null) {
+    private RegisterSignalHandlers(): void 
+{
+        const handleShutdown = async (): Promise<void> => 
+{
+            if (this.shutdownManager !== null) 
+{
                 await this.shutdownManager.BeginShutdown();
             }
         };
 
-        process.on('SIGTERM', handleShutdown);
-        process.on('SIGINT', handleShutdown);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis.process as any).on('SIGTERM', handleShutdown);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis.process as any).on('SIGINT', handleShutdown);
     }
 
     /**
      * Registers the server shutdown hook with SignalLifecycleManager.
-     * This ensures the server is properly closed during graceful shutdown.
      */
-    private RegisterShutdownHook(): void {
-        const serverCloseCallback = (): void => {
-            if (this.server !== null) {
+    private RegisterShutdownHook(): void 
+{
+        const serverCloseCallback = (): void => 
+{
+            if (this.server !== null) 
+{
                 this.server.close();
             }
         };
@@ -399,11 +328,11 @@ class App {
      * @param port - Port number to listen on
      * @returns The Express application
      */
-    public Listen(port: number): express.Application {
-        this.server = this.app.listen(port, () => {
+    public Listen(port: number): express.Application 
+{
+        this.server = this.app.listen(port, () => 
+{
             this.logger.info('Server running on port', { port });
-
-            // Create shutdown manager after server is ready
             this.shutdownManager = new ShutdownManager(
                 this.server!,
                 this.threadPool
@@ -418,7 +347,8 @@ class App {
      *
      * @returns The Express application
      */
-    public GetApp(): express.Application {
+    public GetApp(): express.Application 
+{
         return this.app;
     }
 }

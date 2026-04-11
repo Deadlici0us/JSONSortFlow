@@ -1,19 +1,30 @@
 import ISorter from './ISorter';
 
-class BubbleSorter implements ISorter {
-    public sort(numbers: number[]): { steps: number[][]; indexes: number[][] } {
+/**
+ *
+ */
+class BubbleSorter implements ISorter 
+{
+    /**
+     *
+     */
+    public sort(numbers: number[]): { steps: number[][]; indexes: number[][] } 
+{
         const steps: number[][] = [];
         const indexes: number[][] = [];
 
         let swapped: boolean;
 
-        do {
+        do 
+{
             swapped = false;
 
-            numbers.forEach((number, index) => {
+            numbers.forEach((number, index) => 
+{
                 const nextIndex = index + 1;
 
-                if (number > numbers[nextIndex]) {
+                if (number > numbers[nextIndex]) 
+{
                     // Swap numbers
                     const temp: number = numbers[index];
                     numbers[index] = numbers[nextIndex];

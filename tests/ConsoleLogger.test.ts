@@ -1,20 +1,28 @@
 import { ConsoleLogger } from '../src/utils/ConsoleLogger';
 
-describe('ConsoleLogger class (Unit Test)', () => {
+describe('ConsoleLogger class (Unit Test)', () => 
+{
     let stdoutWriteSpy: jest.SpyInstance;
     let stderrWriteSpy: jest.SpyInstance;
 
-    beforeEach(() => {
-        stdoutWriteSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
-        stderrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    beforeEach(() => 
+{
+        stdoutWriteSpy = jest
+            .spyOn(process.stdout, 'write')
+            .mockImplementation(() => true);
+        stderrWriteSpy = jest
+            .spyOn(process.stderr, 'write')
+            .mockImplementation(() => true);
     });
 
-    afterEach(() => {
+    afterEach(() => 
+{
         stdoutWriteSpy.mockRestore();
         stderrWriteSpy.mockRestore();
     });
 
-    it('should log info messages to stdout as JSON', () => {
+    it('should log info messages to stdout as JSON', () => 
+{
         const consoleLogger = new ConsoleLogger();
         consoleLogger.info('Test Info Message');
 
@@ -25,7 +33,8 @@ describe('ConsoleLogger class (Unit Test)', () => {
         expect(parsed.timestamp).toBeDefined();
     });
 
-    it('should log warn messages to stdout as JSON', () => {
+    it('should log warn messages to stdout as JSON', () => 
+{
         const consoleLogger = new ConsoleLogger();
         consoleLogger.warn('Test Warning Message');
 
@@ -35,7 +44,8 @@ describe('ConsoleLogger class (Unit Test)', () => {
         expect(parsed.message).toBe('Test Warning Message');
     });
 
-    it('should log error messages to stderr as JSON', () => {
+    it('should log error messages to stderr as JSON', () => 
+{
         const consoleLogger = new ConsoleLogger();
         consoleLogger.error('Test Error Message');
 
@@ -45,7 +55,8 @@ describe('ConsoleLogger class (Unit Test)', () => {
         expect(parsed.message).toBe('Test Error Message');
     });
 
-    it('should log debug messages to stdout as JSON', () => {
+    it('should log debug messages to stdout as JSON', () => 
+{
         const consoleLogger = new ConsoleLogger();
         consoleLogger.debug('Test Debug Message');
 
@@ -55,10 +66,11 @@ describe('ConsoleLogger class (Unit Test)', () => {
         expect(parsed.message).toBe('Test Debug Message');
     });
 
-    it('should include metadata when provided', () => {
+    it('should include metadata when provided', () => 
+{
         const consoleLogger = new ConsoleLogger();
         const meta = { userId: 123, action: 'test' };
-        
+
         consoleLogger.info('Test with metadata', meta);
 
         const output = stdoutWriteSpy.mock.calls[0][0];
@@ -66,12 +78,14 @@ describe('ConsoleLogger class (Unit Test)', () => {
         expect(parsed.meta).toEqual(meta);
     });
 
-    it('should handle circular references in metadata', () => {
+    it('should handle circular references in metadata', () => 
+{
         const consoleLogger = new ConsoleLogger();
         const obj: any = { name: 'test' };
         obj.self = obj; // Create circular reference
-        
-        expect(() => {
+
+        expect(() => 
+{
             consoleLogger.info('Test circular', obj);
         }).not.toThrow();
 
@@ -80,7 +94,8 @@ describe('ConsoleLogger class (Unit Test)', () => {
         expect(parsed.meta.self).toBe('[Circular Reference]');
     });
 
-    it('should not include meta when undefined', () => {
+    it('should not include meta when undefined', () => 
+{
         const consoleLogger = new ConsoleLogger();
         consoleLogger.info('Test without metadata');
 

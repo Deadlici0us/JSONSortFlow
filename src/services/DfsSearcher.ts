@@ -3,84 +3,149 @@ import { ISearcher } from './ISearcher';
 type Coordinate = [number, number];
 type ParentMap = Map<string, Coordinate>;
 
-export class DfsSearcher implements ISearcher {
+/**
+ * Implements Depth-First Search algorithm.
+ */
+export class DfsSearcher implements ISearcher 
+{
     /**
-     * Performs Depth-First Search to find a path
-     * from start to end coordinates in a grid matrix.
+     * Performs DFS to find a path.
      *
-     * @param start - Starting coordinate [x, y]
-     * @param end - Ending coordinate [x, y]
-     * @param matrix - 2D grid where 0 = free, 1 = obstacle
-     * @returns Object with explored nodes and result path
+     * @param start - Start coordinate
+     * @param end - End coordinate
+     * @param matrix - Grid matrix
+     * @returns Object with explored and result
      */
     public search(
         start: Coordinate,
         end: Coordinate,
         matrix: number[][]
-    ): { explored: Coordinate[]; result: Coordinate[] } {
+    ): { explored: Coordinate[]; result: Coordinate[] } 
+{
         const explored: Coordinate[] = [];
         const parentMap: ParentMap = new Map();
 
-        if (this.IsSameCoordinate(start, end)) {
+        if (this.IsSameCoordinate(start, end)) 
+{
             explored.push(start);
             return { explored, result: [start] };
         }
 
         const stack: Coordinate[] = [start];
         explored.push(start);
-        parentMap.set(this.CoordinateToString(start), start);
+        // Don't add start to parentMap - it has no parent
+        // Only add nodes to parentMap when they're discovered from another node
 
-        while (stack.length > 0) {
+        return this.ExecuteDfs(stack, explored, parentMap, end, matrix);
+    }
+
+    /**
+     * Executes main DFS loop.
+     *
+     * @param stack - Stack of coordinates
+     * @param explored - Explored coordinates
+     * @param parentMap - Parent map
+     * @param end - End coordinate
+     * @param matrix - Grid matrix
+     * @returns Search result
+     */
+    private ExecuteDfs(
+        stack: Coordinate[],
+        explored: Coordinate[],
+        parentMap: ParentMap,
+        end: Coordinate,
+        matrix: number[][]
+    ): { explored: Coordinate[]; result: Coordinate[] } 
+{
+        while (stack.length > 0) 
+{
             const current = stack.pop()!;
 
-            if (this.IsSameCoordinate(current, end)) {
-                const result = this.ReconstructPath(parentMap, start, end);
+            if (this.IsSameCoordinate(current, end)) 
+{
+                const result = this.ReconstructPath(parentMap, end);
                 return { explored, result };
             }
 
-            const neighbors = this.GetValidNeighbors(
-                current,
-                matrix,
-                parentMap
-            );
-
-            for (const neighbor of neighbors) {
-                const neighborKey = this.CoordinateToString(neighbor);
-
-                if (!parentMap.has(neighborKey)) {
-                    parentMap.set(neighborKey, current);
-                    stack.push(neighbor);
-                    explored.push(neighbor);
-                }
-            }
+            this.ProcessNeighbors(current, parentMap, stack, explored, matrix);
         }
 
         return { explored, result: [] };
     }
 
     /**
-     * Checks if two coordinates are the same position.
+     * Processes neighbors of current coordinate.
+     *
+     * @param current - Current coordinate
+     * @param parentMap - Parent map
+     * @param stack - Stack
+     * @param explored - Explored coordinates
+     * @param matrix - Grid matrix
      */
-    private IsSameCoordinate(a: Coordinate, b: Coordinate): boolean {
+  private ProcessNeighbors(
+        current: Coordinate,
+        parentMap: ParentMap,
+        stack: Coordinate[],
+        explored: Coordinate[],
+        matrix: number[][]
+    ): void 
+    {
+        const neighbors = this.GetValidNeighbors(current, matrix, parentMap);
+        for (const neighbor of neighbors) 
+        {
+            const neighborKey = this.CoordinateToString(neighbor);
+
+            // Check if already explored (more reliable than parentMap check)
+            const alreadyExplored = explored.some(
+                coord => coord[0] === neighbor[0] && coord[1] === neighbor[1]
+            );
+
+            if (!alreadyExplored) 
+            {
+                parentMap.set(neighborKey, current);
+                stack.push(neighbor);
+                explored.push(neighbor);
+            }
+        }
+    }
+
+    /**
+     * Checks if coordinates are equal.
+     *
+     * @param a - First coordinate
+     * @param b - Second coordinate
+     * @returns True if equal
+     */
+    private IsSameCoordinate(a: Coordinate, b: Coordinate): boolean 
+{
         return a[0] === b[0] && a[1] === b[1];
     }
 
     /**
-     * Converts coordinate tuple to string key for Map storage.
+     * Converts coordinate to string.
+     *
+     * @param coord - Coordinate
+     * @returns String key
      */
-    private CoordinateToString(coord: Coordinate): string {
+    private CoordinateToString(coord: Coordinate): string 
+{
         return `${coord[0]},${coord[1]}`;
     }
 
     /**
-     * Retrieves all valid neighboring coordinates (N, S, E, W).
-     * Returns only unblocked, in-bounds, and unvisited neighbors.
+     * Gets valid neighbors.
+     *
+     * @param coord - Current coordinate
+     * @param matrix - Grid matrix
+     * @param parentMap - Parent map
+     * @returns Valid neighbors
      */
     private GetValidNeighbors(
         coord: Coordinate,
         matrix: number[][],
         parentMap: ParentMap
-    ): Coordinate[] {
+    ): Coordinate[] 
+{
         const [x, y] = coord;
         const neighbors: Coordinate[] = [];
         const directions: [number, number][] = [
@@ -90,17 +155,11 @@ export class DfsSearcher implements ISearcher {
             [1, 0],
         ];
 
-        for (const [dx, dy] of directions) {
-            const newX = x + dx;
-            const newY = y + dy;
-
-            if (this.IsWithinBounds(newX, newY, matrix)) {
-                if (matrix[newY][newX] === 0) {
-                    const neighborKey = `${newX},${newY}`;
-                    if (!parentMap.has(neighborKey)) {
-                        neighbors.push([newX, newY]);
-                    }
-                }
+        for (const [dx, dy] of directions) 
+{
+            if (this.IsDirectionValid(x, y, dx, dy, matrix, parentMap)) 
+{
+                neighbors.push([x + dx, y + dy]);
             }
         }
 
@@ -108,35 +167,107 @@ export class DfsSearcher implements ISearcher {
     }
 
     /**
-     * Validates that coordinates are within matrix boundaries.
+     * Checks if direction is valid.
+     *
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     * @param dx - Delta X
+     * @param dy - Delta Y
+     * @param matrix - Grid matrix
+     * @param parentMap - Parent map
+     * @returns True if valid
      */
-    private IsWithinBounds(x: number, y: number, matrix: number[][]): boolean {
+    private IsDirectionValid(
+        x: number,
+        y: number,
+        dx: number,
+        dy: number,
+        matrix: number[][],
+        parentMap: ParentMap
+    ): boolean 
+{
+        const newX = x + dx;
+        const newY = y + dy;
+        if (!this.IsWithinBounds(newX, newY, matrix)) 
+{
+            return false;
+        }
+        if (!this.IsWalkable(newX, newY, matrix)) 
+{
+            return false;
+        }
+        return !this.IsAlreadyVisited(newX, newY, parentMap);
+    }
+
+    /**
+     * Checks if cell is walkable.
+     *
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     * @param matrix - Grid matrix
+     * @returns True if walkable
+     */
+    private IsWalkable(x: number, y: number, matrix: number[][]): boolean 
+{
+        return matrix[y][x] === 0;
+    }
+
+    /**
+     * Checks if cell already visited.
+     *
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     * @param parentMap - Parent map
+     * @returns True if visited
+     */
+    private IsAlreadyVisited(
+        x: number,
+        y: number,
+        parentMap: ParentMap
+    ): boolean 
+{
+        return parentMap.has(`${x},${y}`);
+    }
+
+    /**
+     * Checks if within bounds.
+     *
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     * @param matrix - Grid matrix
+     * @returns True if within bounds
+     */
+    private IsWithinBounds(x: number, y: number, matrix: number[][]): boolean 
+{
         return x >= 0 && x < matrix[0].length && y >= 0 && y < matrix.length;
     }
 
     /**
-     * Reconstructs the path from start to end using parent map.
+     * Reconstructs path from parent map.
+     *
+     * @param parentMap - Parent map
+     * @param end - End coordinate
+     * @returns Path array
      */
     private ReconstructPath(
         parentMap: ParentMap,
-        start: Coordinate,
         end: Coordinate
-    ): Coordinate[] {
-        const path: Coordinate[] = [];
+    ): Coordinate[] 
+{
+        const path: Coordinate[] = [end];
         let current: Coordinate | null = end;
 
-        while (current !== null) {
-            path.unshift(current);
+        while (current !== null) 
+{
             const currentKey = this.CoordinateToString(current);
             const parent = parentMap.get(currentKey);
 
-            if (parent === start || !parent) {
-                if (parent === start) {
-                    path.unshift(start);
-                }
+            if (parent === undefined) 
+{
                 break;
             }
 
+            path.unshift(parent);
             current = parent;
         }
 

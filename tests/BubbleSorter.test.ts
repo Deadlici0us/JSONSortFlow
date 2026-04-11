@@ -1,13 +1,16 @@
 import Bubblesorter from '../src/services/BubbleSorter';
 
-describe('Bubblesorter class (Unit Test)', () => {
-    it('should implement ISorter interface', () => {
+describe('Bubblesorter class (Unit Test)', () => 
+{
+    it('should implement ISorter interface', () => 
+{
         const sorter = new Bubblesorter();
         expect(sorter.sort).toBeDefined();
         expect(typeof sorter.sort).toBe('function');
     });
 
-    it('should correctly sort an array', () => {
+    it('should correctly sort an array', () => 
+{
         const sorter = new Bubblesorter();
         const input = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5];
         const result = sorter.sort(input);
@@ -16,7 +19,8 @@ describe('Bubblesorter class (Unit Test)', () => {
         expect(sortedArray).toEqual([1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]);
     });
 
-    it('should handle an empty array', () => {
+    it('should handle an empty array', () => 
+{
         const sorter = new Bubblesorter();
         const input: number[] = [];
         const result = sorter.sort(input);
